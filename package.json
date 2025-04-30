@@ -1,0 +1,24 @@
+{
+    "name": "bun-template",
+    "module": "index.ts",
+    "type": "module",
+    "scripts": {
+        "dev": "bun run --watch src/index.ts",
+        "deploy": "echo '(｀・ω・´) < Replace with your deploy script!'",
+        "build": "bun build src/index.ts --outfile=dist/index.js",
+        "start": "bun run dist/index.js"
+    },
+    "private": true,
+    "devDependencies": {
+        "@types/bun": "^1.2.11",
+        "pino-pretty": "^13.0.0"
+    },
+    "peerDependencies": {
+        "typescript": "^5"
+    },
+    "dependencies": {
+        "pino": "^9.6.0",
+        "znv": "^0.5.0",
+        "zod": "^3.24.3"
+    }
+}
