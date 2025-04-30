@@ -12,3 +12,13 @@ export const env = parseEnv(process.env, {
     EXAMPLE_API_KEY: z.string().min(1).startsWith("sk-"),
     EXAMPLE_API_URL: z.string().min(1).url(),
 });
+
+/**
+ * 環境変数をマスクするための関数、最初の3文字だけ表示
+ * @param value マスクする値
+ * @returns マスクされた値
+ */
+export function maskEnv(value: string): string {
+    // 最初の3文字だけ表示
+    return value.slice(0, 3) + "******";
+}

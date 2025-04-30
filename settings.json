@@ -1,0 +1,12 @@
+{
+    "appName": "My Awesome App",
+    "featureFlags": {
+        "newUI": true,
+        "betaFeature": false
+    },
+    "apiEndpoints": {
+        "users": "/api/v1/users",
+        "products": "/api/v1/products"
+    },
+    "retryAttempts": 3
+}
