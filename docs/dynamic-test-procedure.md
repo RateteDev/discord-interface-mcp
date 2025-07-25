@@ -11,10 +11,10 @@
 
 | 項目            | 値                                     | 確認 |
 | --------------- | -------------------------------------- | ---- |
-| Bot Token       | `MTI2NDUyNjE3MzU0MzczMTI0MA.GrBjnp...` | ✅    |
-| Guild ID        | `661496001198161921`                   | ✅    |
-| Text Channel ID | `1230500850779164682`                  | ✅    |
-| Application ID  | `1264526173543731240`                  | ✅    |
+| Bot Token       | `YOUR_BOT_TOKEN_HERE`                  | ✅    |
+| Guild ID        | `YOUR_GUILD_ID_HERE`                   | ✅    |
+| Text Channel ID | `YOUR_CHANNEL_ID_HERE`                 | ✅    |
+| Application ID  | `YOUR_APP_ID_HERE`                     | ✅    |
 
 ## 動的テスト手順
 
@@ -39,9 +39,9 @@ PS D:\repo\discord-interface-mcp> bun run dev
 $ bun run --watch src/index.ts
 [2025-07-25 22:28:55] INFO: Discord Interface MCP starting...
 [2025-07-25 22:28:55] INFO: settings.appName: My Awesome App
-[2025-07-25 22:28:55] INFO: Discord Bot Token: MTI******
-[2025-07-25 22:28:55] INFO: Discord Guild ID: 661496001198161921
-[2025-07-25 22:28:55] INFO: Discord Text Channel ID: 1230500850779164682
+[2025-07-25 22:28:55] INFO: Discord Bot Token: YOUR******
+[2025-07-25 22:28:55] INFO: Discord Guild ID: YOUR_GUILD_ID
+[2025-07-25 22:28:55] INFO: Discord Text Channel ID: YOUR_CHANNEL_ID
 [2025-07-25 22:28:55] INFO: Starting Discord bot...
 [2025-07-25 22:28:57] INFO: Discord Bot logged in as TEST#4937
 [2025-07-25 22:28:57] INFO: Discord bot is ready!

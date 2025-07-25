@@ -8,6 +8,7 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { logger } from "../utils/logger";
 import type { DiscordBot } from "../discord/bot";
+import type { SendDiscordMessageArgs, SendDiscordEmbedArgs } from "../types/mcp";
 
 /**
  * MCP サーバークラス
@@ -124,7 +125,7 @@ export class MCPServer {
      * @param args ツールの引数
      * @returns ツールの実行結果
      */
-    private async callTool(name: string, args: any): Promise<CallToolResult> {
+    private async callTool(name: string, args: unknown): Promise<CallToolResult> {
         if (!this.discordBot.getIsReady()) {
             throw new Error("Discord bot is not ready");
         }
@@ -147,14 +148,15 @@ export class MCPServer {
      * @param args メッセージ送信引数
      * @returns 送信結果
      */
-    private async sendDiscordMessage(args: any): Promise<CallToolResult> {
-        if (!args.content) {
+    private async sendDiscordMessage(args: unknown): Promise<CallToolResult> {
+        const typedArgs = args as SendDiscordMessageArgs;
+        if (!typedArgs.content) {
             throw new Error("Missing required parameter: content");
         }
 
         try {
-            await this.discordBot.sendMessage(args.content);
-            logger.info(`Sent message to Discord: ${args.content}`);
+            await this.discordBot.sendMessage(typedArgs.content);
+            logger.info(`Sent message to Discord: ${typedArgs.content}`);
             
             return {
                 content: [
@@ -176,14 +178,20 @@ export class MCPServer {
      * @param args Embed 送信引数
      * @returns 送信結果
      */
-    private async sendDiscordEmbed(args: any): Promise<CallToolResult> {
+    private async sendDiscordEmbed(args: unknown): Promise<CallToolResult> {
         try {
-            const embed: any = {};
+            const typedArgs = args as SendDiscordEmbedArgs;
+            const embed: {
+                title?: string;
+                description?: string;
+                color?: number;
+                fields?: Array<{ name: string; value: string; inline?: boolean }>;
+            } = {};
             
-            if (args.title) embed.title = args.title;
-            if (args.description) embed.description = args.description;
-            if (args.color !== undefined) embed.color = args.color;
-            if (args.fields) embed.fields = args.fields;
+            if (typedArgs.title) embed.title = typedArgs.title;
+            if (typedArgs.description) embed.description = typedArgs.description;
+            if (typedArgs.color !== undefined) embed.color = typedArgs.color;
+            if (typedArgs.fields) embed.fields = typedArgs.fields;
 
             await this.discordBot.sendMessage({
                 embeds: [embed]

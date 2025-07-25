@@ -4,6 +4,7 @@ import { env } from './env';
 /**
  * ロガートランスポート設定
  * @description 開発環境用のプリティプリント設定を構成
+ * MCPプロトコルではstdin/stdoutを使用するため、ログはstderrに出力
  */
 const transport = env.NODE_ENV !== 'production'
     ? {
@@ -12,9 +13,15 @@ const transport = env.NODE_ENV !== 'production'
             colorize: true,
             translateTime: 'SYS:yyyy-mm-dd HH:MM:ss',
             ignore: 'pid,hostname',
+            destination: 2, // stderr に出力（MCPプロトコルとの混在を回避）
         }
     }
-    : undefined;
+    : {
+        target: 'pino/file',
+        options: {
+            destination: 2, // 本番環境でもstderrに出力
+        }
+    };
 
 /**
  * アプリケーションロガーインスタンス

@@ -1,4 +1,4 @@
-import { Client, Events, GatewayIntentBits, type MessageCreateOptions } from "discord.js";
+import { Client, Events, GatewayIntentBits, type MessageCreateOptions, type TextBasedChannel } from "discord.js";
 import { logger } from "../utils/logger";
 
 /**
@@ -88,7 +88,12 @@ export class DiscordBot {
         }
 
         try {
-            await (channel as any).send(content);
+            // Type guard ensures channel is TextBasedChannel
+            if ('send' in channel) {
+                await channel.send(content);
+            } else {
+                throw new Error("Channel does not support sending messages");
+            }
             logger.debug(`Message sent to channel ${this.config.textChannelId}`);
         } catch (error) {
             logger.error("Failed to send message:", error);
