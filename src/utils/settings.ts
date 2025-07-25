@@ -32,9 +32,45 @@ export type Settings = z.infer<typeof settingsSchema>;
  * @throws {Error} ファイルが存在しない場合またはバリデーションエラー
  */
 function loadSettings(): Settings {
-    // ルートのsettings.jsonを読み込む
-    const settingsPath = path.resolve(process.cwd(), "settings.json");
-    const fileContent = fs.readFileSync(settingsPath, "utf-8");
+    // 複数の場所からsettings.jsonを探す
+    const possiblePaths = [
+        path.resolve(process.cwd(), "settings.json"),
+        path.resolve(__dirname, "../../settings.json"),
+        path.resolve(__dirname, "../../../settings.json"),
+        "D:/repo/discord-interface-mcp/settings.json" // フォールバック
+    ];
+    
+    let settingsPath: string | null = null;
+    let fileContent: string | null = null;
+    
+    for (const possiblePath of possiblePaths) {
+        try {
+            fileContent = fs.readFileSync(possiblePath, "utf-8");
+            settingsPath = possiblePath;
+            break;
+        } catch (error) {
+            // このパスでは見つからなかった、次を試す
+            continue;
+        }
+    }
+    
+    if (!fileContent) {
+        // settings.jsonが見つからない場合はデフォルト値を返す
+        console.warn("settings.json not found, using default settings");
+        return {
+            appName: "Discord Interface MCP",
+            featureFlags: {
+                newUI: false,
+                betaFeature: false
+            },
+            apiEndpoints: {
+                users: "/api/v1/users",
+                products: "/api/v1/products"
+            },
+            retryAttempts: 3
+        };
+    }
+    
     // JSONファイルをパース
     const jsonData = JSON.parse(fileContent);
     // パースしたJSONデータをスキーマにマッチング

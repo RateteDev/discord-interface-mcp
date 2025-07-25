@@ -3,18 +3,18 @@
 ## 前提条件
 
 - [x] 静的テスト完了（TypeScript型チェック: ✅、単体テスト: 25/25 ✅、ビルド: ✅）
-- [ ] Discord開発者ポータルでBotを作成済み
-- [ ] Botをテスト用サーバーに招待済み
-- [ ] 環境変数設定済み（`.env`ファイル）
+- [x] Discord開発者ポータルでBotを作成済み
+- [x] Botをテスト用サーバーに招待済み
+- [x] 環境変数設定済み（`.env`ファイル）
 
 ## テスト環境情報
 
-| 項目 | 値 | 確認 |
-|---|---|---|
-| Bot Token | `MTI2NDUyNjE3MzU0MzczMTI0MA.GrBjnp...` | ✅ |
-| Guild ID | `661496001198161921` | ✅ |
-| Text Channel ID | `1230500850779164682` | ✅ |
-| Application ID | `1264526173543731240` | ✅ |
+| 項目            | 値                                     | 確認 |
+| --------------- | -------------------------------------- | ---- |
+| Bot Token       | `MTI2NDUyNjE3MzU0MzczMTI0MA.GrBjnp...` | ✅    |
+| Guild ID        | `661496001198161921`                   | ✅    |
+| Text Channel ID | `1230500850779164682`                  | ✅    |
+| Application ID  | `1264526173543731240`                  | ✅    |
 
 ## 動的テスト手順
 
@@ -28,21 +28,33 @@ bun run dev
 ```
 
 **期待される結果:**
-- [ ] コンソールに "Discord Interface MCP starting..." が表示される
-- [ ] コンソールに "Discord Bot logged in as [Bot名]" が表示される
-- [ ] コンソールに "Discord bot is ready!" が表示される
-- [ ] エラーが発生しない
+- [x] コンソールに "Discord Interface MCP starting..." が表示される
+- [x] コンソールに "Discord Bot logged in as [Bot名]" が表示される
+- [x] コンソールに "Discord bot is ready!" が表示される
+- [x] エラーが発生しない
 
 **実際の結果:**
-```
-記入欄：
+```powershell
+PS D:\repo\discord-interface-mcp> bun run dev
+$ bun run --watch src/index.ts
+[2025-07-25 22:28:55] INFO: Discord Interface MCP starting...
+[2025-07-25 22:28:55] INFO: settings.appName: My Awesome App
+[2025-07-25 22:28:55] INFO: Discord Bot Token: MTI******
+[2025-07-25 22:28:55] INFO: Discord Guild ID: 661496001198161921
+[2025-07-25 22:28:55] INFO: Discord Text Channel ID: 1230500850779164682
+[2025-07-25 22:28:55] INFO: Starting Discord bot...
+[2025-07-25 22:28:57] INFO: Discord Bot logged in as TEST#4937
+[2025-07-25 22:28:57] INFO: Discord bot is ready!
+[2025-07-25 22:28:57] INFO: Starting MCP server...
+[2025-07-25 22:28:57] INFO: MCP server started
+[2025-07-25 22:28:57] INFO: Discord Interface MCP is running successfully!
 ```
 
 #### 1.2 Discord側の確認
 
 **確認項目:**
-- [ ] Discordサーバーで Bot がオンライン状態になっている
-- [ ] Bot に緑色の●マークが付いている
+- [x] Discordサーバーで Bot がオンライン状態になっている
+- [x] Bot に緑色の●マークが付いている
 
 ### 2. MCP サーバーとしての動作確認
 
@@ -70,8 +82,38 @@ bun run dev
 
 **実際の結果:**
 ```
-記入欄：
+file:///D:/repo/discord-interface-mcp/dist/index.js:68852
+    throw new Error(reporter(errors, schemas));
+          ^
+
+Error: Errors found while parsing environment:
+  [DISCORD_BOT_TOKEN]:
+    This field is required.
+    (received undefined)
+
+  [DISCORD_CLIENT_ID]:
+    This field is required.
+    (received undefined)
+
+  [DISCORD_GUILD_ID]:
+    This field is required.
+    (received undefined)
+
+  [DISCORD_TEXT_CHANNEL_ID]:
+    This field is required.
+    (received undefined)
+
+    at parseEnvImpl (file:///D:/repo/discord-interface-mcp/dist/index.js:68852:11)
+    at parseEnv (file:///D:/repo/discord-interface-mcp/dist/index.js:68884:7)
+    at file:///D:/repo/discord-interface-mcp/dist/index.js:68887:12
+    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+
+Node.js v22.17.0
 ```
+
+必須の環境変数が設定されていないことによるエラーが発生しました。
 
 ### 3. エンドツーエンドテスト
 
@@ -223,7 +265,7 @@ done
 
 **テスト実施者:** _______________
 
-**総合結果:** 
+**総合結果:**
 - [ ] ✅ 合格（すべてのテストに合格）
 - [ ] ⚠️ 条件付き合格（軽微な問題あり）
 - [ ] ❌ 不合格（重大な問題あり）
