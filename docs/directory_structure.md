@@ -18,4 +18,9 @@
 ## tests
 - プロジェクトのテストを格納する
 
+## .claude-workspace
+- Claude AIが作業時に使用する専用ディレクトリ
+- 一時ファイルやレポートファイルを保存
+- .gitkeepファイルのみGitで追跡、その他の内容は.gitignoreで除外
+
 
