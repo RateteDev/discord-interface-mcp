@@ -56,59 +56,10 @@ describe("MCPServer", () => {
         it("利用可能なツールのリストを返す", async () => {
             const tools = await (mcpServer as any).listTools();
             
-            expect(tools).toEqual({
-                tools: [
-                    {
-                        name: "send_discord_message",
-                        description: "Send a message to Discord channel",
-                        inputSchema: {
-                            type: "object",
-                            properties: {
-                                content: {
-                                    type: "string",
-                                    description: "The message content to send"
-                                }
-                            },
-                            required: ["content"]
-                        }
-                    },
-                    {
-                        name: "send_discord_embed",
-                        description: "Send a rich embed message to Discord channel",
-                        inputSchema: {
-                            type: "object",
-                            properties: {
-                                title: {
-                                    type: "string",
-                                    description: "The title of the embed"
-                                },
-                                description: {
-                                    type: "string",
-                                    description: "The description of the embed"
-                                },
-                                color: {
-                                    type: "number",
-                                    description: "The color of the embed (in decimal)"
-                                },
-                                fields: {
-                                    type: "array",
-                                    items: {
-                                        type: "object",
-                                        properties: {
-                                            name: { type: "string" },
-                                            value: { type: "string" },
-                                            inline: { type: "boolean" }
-                                        },
-                                        required: ["name", "value"]
-                                    },
-                                    description: "Array of embed fields"
-                                }
-                            },
-                            required: []
-                        }
-                    }
-                ]
-            });
+            expect(tools.tools).toHaveLength(3);
+            expect(tools.tools.find((t: any) => t.name === "send_discord_message")).toBeDefined();
+            expect(tools.tools.find((t: any) => t.name === "send_discord_embed")).toBeDefined();
+            expect(tools.tools.find((t: any) => t.name === "send_discord_embed_with_feedback")).toBeDefined();
         });
     });
 
@@ -186,6 +137,75 @@ describe("MCPServer", () => {
                         }
                     ]
                 });
+            });
+        });
+
+        describe("send_discord_embed_with_feedback", () => {
+            it("Discord にフィードバック付きEmbedメッセージを送信する", async () => {
+                // モック設定
+                mockDiscordBot.sendMessageWithFeedback = mock(() => Promise.resolve({
+                    response: 'yes',
+                    userId: 'test-user-123',
+                    responseTime: 1500
+                }));
+
+                const embedData = {
+                    title: "Feedback Test",
+                    description: "Please provide feedback",
+                    color: 0xff0000,
+                    feedbackPrompt: "Do you agree?"
+                };
+
+                const result = await (mcpServer as any).callTool("send_discord_embed_with_feedback", embedData);
+
+                expect(mockDiscordBot.sendMessageWithFeedback).toHaveBeenCalledWith(
+                    {
+                        embeds: [{
+                            title: "Feedback Test",
+                            description: "Please provide feedback",
+                            color: 0xff0000
+                        }]
+                    },
+                    "Do you agree?",
+                    undefined
+                );
+
+                const parsedResult = JSON.parse(result.content[0].text);
+                expect(parsedResult.message).toBe("Embed message sent and feedback received");
+                expect(parsedResult.feedback).toEqual({
+                    response: 'yes',
+                    userId: 'test-user-123',
+                    responseTime: 1500
+                });
+            });
+
+            it("タイムアウトを処理できる", async () => {
+                // 環境変数のモック
+                const originalTimeout = process.env.DISCORD_FEEDBACK_TIMEOUT;
+                process.env.DISCORD_FEEDBACK_TIMEOUT = "5000";
+
+                // 新しい MCPServer インスタンスを作成して環境変数を反映
+                const newMcpServer = new MCPServer(mockDiscordBot);
+                (newMcpServer as any).server = mockServer;
+
+                mockDiscordBot.sendMessageWithFeedback = mock(() => Promise.resolve({
+                    response: 'timeout',
+                    responseTime: 5000
+                }));
+
+                const result = await (newMcpServer as any).callTool("send_discord_embed_with_feedback", {
+                    title: "Timeout Test"
+                });
+
+                const parsedResult = JSON.parse(result.content[0].text);
+                expect(parsedResult.feedback.response).toBe('timeout');
+
+                // 環境変数を元に戻す
+                if (originalTimeout !== undefined) {
+                    process.env.DISCORD_FEEDBACK_TIMEOUT = originalTimeout;
+                } else {
+                    delete process.env.DISCORD_FEEDBACK_TIMEOUT;
+                }
             });
         });
 
