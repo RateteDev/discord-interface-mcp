@@ -11,7 +11,7 @@
     "description": "Model Context Protocol server that provides Discord as an interface for AI assistants",
     "version": "0.1.0",
     "author": "Your Name",
-    "license": "MIT",
+    "license": "GPL-3.0",
     "private": true,
     "devDependencies": {
         "@types/bun": "^1.2.11",
