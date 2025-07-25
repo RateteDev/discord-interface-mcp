@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "discord-interface": {
+      "command": "node",
+      "args": ["D:/repo/discord-interface-mcp/dist/index.js"],
+      "env": {
+        "NODE_ENV": "production",
+        "DISCORD_BOT_TOKEN": "YOUR_BOT_TOKEN_HERE",
+        "DISCORD_CLIENT_ID": "YOUR_CLIENT_ID_HERE",
+        "DISCORD_GUILD_ID": "YOUR_GUILD_ID_HERE",
+        "DISCORD_TEXT_CHANNEL_ID": "YOUR_TEXT_CHANNEL_ID_HERE"
+      }
+    }
+  }
+}

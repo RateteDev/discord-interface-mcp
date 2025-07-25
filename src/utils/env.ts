@@ -10,8 +10,10 @@ export const env = parseEnv(process.env, {
     NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
     LOG_LEVEL: z.enum(["info", "debug", "warn", "error"]).default("info"),
 
-    EXAMPLE_API_KEY: z.string().min(1).startsWith("sk-"),
-    EXAMPLE_API_URL: z.string().min(1).url(),
+    DISCORD_BOT_TOKEN: z.string().min(1),
+    DISCORD_CLIENT_ID: z.string().min(1),
+    DISCORD_GUILD_ID: z.string().min(1),
+    DISCORD_TEXT_CHANNEL_ID: z.string().min(1),
 });
 
 /**

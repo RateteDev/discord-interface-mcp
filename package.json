@@ -5,8 +5,10 @@
     "scripts": {
         "dev": "bun run --watch src/index.ts",
         "deploy": "echo '(｀・ω・´) < Replace with your deploy script!'",
-        "build": "bun build src/index.ts --outfile=dist/index.js",
-        "start": "bun run dist/index.js"
+        "build": "bun build src/index.ts --outfile=dist/index.js --target=node",
+        "start": "bun run dist/index.js",
+        "test": "bun test",
+        "test:watch": "bun test --watch"
     },
     "description": "Model Context Protocol server that provides Discord as an interface for AI assistants",
     "version": "0.1.0",
