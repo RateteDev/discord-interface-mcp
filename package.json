@@ -1,5 +1,5 @@
 {
-    "name": "bun-template",
+    "name": "discord-interface-mcp",
     "module": "index.ts",
     "type": "module",
     "scripts": {
@@ -8,6 +8,10 @@
         "build": "bun build src/index.ts --outfile=dist/index.js",
         "start": "bun run dist/index.js"
     },
+    "description": "Model Context Protocol server that provides Discord as an interface for AI assistants",
+    "version": "0.1.0",
+    "author": "Your Name",
+    "license": "MIT",
     "private": true,
     "devDependencies": {
         "@types/bun": "^1.2.11",
@@ -17,6 +21,8 @@
         "typescript": "^5"
     },
     "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.17.0",
+        "discord.js": "^14.21.0",
         "pino": "^9.6.0",
         "znv": "^0.5.0",
         "zod": "^3.24.3"
