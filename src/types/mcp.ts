@@ -27,3 +27,23 @@ export interface SendDiscordEmbedArgs {
         inline?: boolean;
     }>;
 }
+
+/**
+ * Discord フィードバック付き Embed 送信ツールの引数
+ */
+export interface SendDiscordEmbedWithFeedbackArgs {
+    /** Embed のタイトル */
+    title?: string;
+    /** Embed の説明 */
+    description?: string;
+    /** Embed の色（10進数） */
+    color?: number;
+    /** Embed のフィールド */
+    fields?: Array<{
+        name: string;
+        value: string;
+        inline?: boolean;
+    }>;
+    /** ボタンの上に表示するテキスト */
+    feedbackPrompt?: string;
+}

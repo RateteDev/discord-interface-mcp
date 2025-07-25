@@ -7,8 +7,9 @@ import {
     type CallToolResult
 } from "@modelcontextprotocol/sdk/types.js";
 import { logger } from "../utils/logger";
+import { env } from "../utils/env";
 import type { DiscordBot } from "../discord/bot";
-import type { SendDiscordMessageArgs, SendDiscordEmbedArgs } from "../types/mcp";
+import type { SendDiscordMessageArgs, SendDiscordEmbedArgs, SendDiscordEmbedWithFeedbackArgs } from "../types/mcp";
 
 /**
  * MCP サーバークラス
@@ -113,6 +114,46 @@ export class MCPServer {
                         },
                         required: []
                     }
+                },
+                {
+                    name: "send_discord_embed_with_feedback",
+                    description: "Send an embed message with Yes/No buttons and wait for user feedback",
+                    inputSchema: {
+                        type: "object",
+                        properties: {
+                            title: {
+                                type: "string",
+                                description: "The title of the embed"
+                            },
+                            description: {
+                                type: "string",
+                                description: "The description of the embed"
+                            },
+                            color: {
+                                type: "number",
+                                description: "The color of the embed (in decimal)"
+                            },
+                            fields: {
+                                type: "array",
+                                items: {
+                                    type: "object",
+                                    properties: {
+                                        name: { type: "string" },
+                                        value: { type: "string" },
+                                        inline: { type: "boolean" }
+                                    },
+                                    required: ["name", "value"]
+                                },
+                                description: "Array of embed fields"
+                            },
+                            feedbackPrompt: {
+                                type: "string",
+                                description: "The prompt text above the buttons",
+                                default: "Please select:"
+                            }
+                        },
+                        required: []
+                    }
                 }
             ]
         };
@@ -136,6 +177,9 @@ export class MCPServer {
             
             case "send_discord_embed":
                 return this.sendDiscordEmbed(args);
+            
+            case "send_discord_embed_with_feedback":
+                return this.sendDiscordEmbedWithFeedback(args);
             
             default:
                 throw new Error(`Unknown tool: ${name}`);
@@ -204,6 +248,55 @@ export class MCPServer {
                     {
                         type: "text",
                         text: "Embed message sent to Discord successfully"
+                    }
+                ]
+            };
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            throw new Error(`Failed to send message to Discord: ${errorMessage}`);
+        }
+    }
+
+    /**
+     * Discord にフィードバック付き Embed メッセージを送信
+     * @private
+     * @param args フィードバック付き Embed 送信引数
+     * @returns 送信結果とフィードバック
+     */
+    private async sendDiscordEmbedWithFeedback(args: unknown): Promise<CallToolResult> {
+        try {
+            const typedArgs = args as SendDiscordEmbedWithFeedbackArgs;
+            const embed: {
+                title?: string;
+                description?: string;
+                color?: number;
+                fields?: Array<{ name: string; value: string; inline?: boolean }>;
+            } = {};
+            
+            if (typedArgs.title) embed.title = typedArgs.title;
+            if (typedArgs.description) embed.description = typedArgs.description;
+            if (typedArgs.color !== undefined) embed.color = typedArgs.color;
+            if (typedArgs.fields) embed.fields = typedArgs.fields;
+
+            const feedbackPrompt = typedArgs.feedbackPrompt || "Please select:";
+            const timeout = env.DISCORD_FEEDBACK_TIMEOUT;
+
+            const feedbackResult = await this.discordBot.sendMessageWithFeedback(
+                { embeds: [embed] },
+                feedbackPrompt,
+                timeout
+            );
+            
+            logger.info(`Sent embed with feedback to Discord. Response: ${feedbackResult.response}`);
+            
+            return {
+                content: [
+                    {
+                        type: "text",
+                        text: JSON.stringify({
+                            message: "Embed message sent and feedback received",
+                            feedback: feedbackResult
+                        }, null, 2)
                     }
                 ]
             };
