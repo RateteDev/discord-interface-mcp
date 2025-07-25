@@ -2,7 +2,8 @@ import { parseEnv } from "znv";
 import { z } from "zod";
 
 /**
- * load environment variables
+ * 環境変数の読み込み
+ * @description 環境変数をパースしてバリデーションを実施
  * @see https://github.com/lostfictions/znv/tree/master
  */
 export const env = parseEnv(process.env, {
@@ -14,9 +15,12 @@ export const env = parseEnv(process.env, {
 });
 
 /**
- * 環境変数をマスクするための関数、最初の3文字だけ表示
- * @param value マスクする値
- * @returns マスクされた値
+ * 環境変数をマスクするための関数
+ * @description セキュリティのため環境変数の値をマスクし、最初の3文字だけ表示
+ * @param {string} value - マスクする値
+ * @returns {string} マスクされた値
+ * @example
+ * maskEnv('sk-1234567890') // 'sk-******'
  */
 export function maskEnv(value: string): string {
     // 最初の3文字だけ表示

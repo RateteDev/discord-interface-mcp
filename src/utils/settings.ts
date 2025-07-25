@@ -4,6 +4,7 @@ import path from "path";
 
 /**
  * 設定ファイルのスキーマ定義
+ * @description アプリケーション設定のバリデーションスキーマ
  */
 export const settingsSchema = z.object({
     appName: z.string().min(1),
@@ -20,12 +21,15 @@ export const settingsSchema = z.object({
 
 /**
  * 設定ファイルの型定義
+ * @description settingsSchemaから推論される設定の型
  */
 export type Settings = z.infer<typeof settingsSchema>;
 
 /**
  * 設定ファイルを読み込む
- * @returns 設定ファイルの内容
+ * @description settings.jsonファイルを読み込み、スキーマでバリデーションを行う
+ * @returns {Settings} バリデーション済みの設定オブジェクト
+ * @throws {Error} ファイルが存在しない場合またはバリデーションエラー
  */
 function loadSettings(): Settings {
     // ルートのsettings.jsonを読み込む
@@ -38,5 +42,8 @@ function loadSettings(): Settings {
     return validatedSettings;
 }
 
-// 設定ファイルをエクスポート
+/**
+ * アプリケーション設定
+ * @description 読み込み済みの設定オブジェクト
+ */
 export const settings = loadSettings();
