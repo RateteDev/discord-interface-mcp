@@ -1,6 +1,5 @@
 import { env, maskEnv } from "./utils/env";
 import { logger } from "./utils/logger";
-import { settings } from "./utils/settings";
 import { DiscordBot } from "./discord/bot";
 import { MCPServer } from "./mcp/server";
 
@@ -10,7 +9,6 @@ import { MCPServer } from "./mcp/server";
 async function main() {
     try {
         logger.info("Discord Interface MCP starting...");
-        logger.info(`settings.appName: ${settings.appName}`);
         logger.info(`Discord Bot Token: ${maskEnv(env.DISCORD_BOT_TOKEN)}`);
         logger.info(`Discord Guild ID: ${env.DISCORD_GUILD_ID}`);
         logger.info(`Discord Text Channel ID: ${env.DISCORD_TEXT_CHANNEL_ID}`);
