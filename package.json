@@ -3,7 +3,7 @@
     "module": "index.ts",
     "type": "module",
     "bin": {
-        "discord-interface-mcp": "./dist/index.js"
+        "discord-interface-mcp": "dist/index.js"
     },
     "scripts": {
         "dev": "bun run --watch src/index.ts",

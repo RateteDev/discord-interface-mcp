@@ -31,6 +31,19 @@ Discord Interface MCPは、Discordをインターフェースとして活用す�
 
 ## インストール
 
+### npxで直接実行（推奨）
+
+```bash
+# npxで直接実行（インストール不要）
+npx discord-interface-mcp
+
+# またはグローバルインストール
+npm install -g discord-interface-mcp
+discord-interface-mcp
+```
+
+### ソースコードから実行
+
 ```bash
 # リポジトリのクローン
 git clone https://github.com/RateteDev/discord-interface-mcp.git
@@ -56,6 +69,27 @@ DISCORD_GUILD_ID=your-discord-guild-id-here
 
 ## 使用方法
 
+### Claude Desktopでの設定
+
+`claude_desktop_config.json`に以下を追加：
+
+```json
+{
+  "mcpServers": {
+    "discord-interface": {
+      "command": "npx",
+      "args": ["discord-interface-mcp"],
+      "env": {
+        "DISCORD_BOT_TOKEN": "your-discord-bot-token",
+        "DISCORD_CHANNEL_ID": "your-channel-id"
+      }
+    }
+  }
+}
+```
+
+### 開発者向け
+
 ```bash
 # 開発モードで起動
 bun run dev
@@ -65,6 +99,9 @@ bun run build
 
 # プロダクション実行
 bun run start
+
+# テスト実行
+bun test
 ```
 
 ## プロジェクト構造
