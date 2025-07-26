@@ -66,33 +66,6 @@ describe("Discord と MCP の統合テスト", () => {
     });
 
     describe("エンドツーエンド動作", () => {
-        it("MCP ツールから Discord にメッセージを送信できる", async () => {
-            // Discord Bot を開始
-            await discordBot.start();
-            
-            // Bot の準備ができるまで待機
-            await new Promise(resolve => setTimeout(resolve, 100));
-            
-            // MCP サーバーを開始
-            await mcpServer.start();
-
-            // MCP ツールを使用してメッセージを送信
-            const result = await (mcpServer as any).callTool("send_discord_message", {
-                content: "Hello from MCP integration test!"
-            });
-
-            // 結果の確認
-            expect(mockSend).toHaveBeenCalledWith("Hello from MCP integration test!");
-            expect(result).toEqual({
-                content: [
-                    {
-                        type: "text",
-                        text: "Message sent to Discord successfully"
-                    }
-                ]
-            });
-        });
-
         it("MCP ツールから Discord に Embed メッセージを送信できる", async () => {
             // Discord Bot を開始
             await discordBot.start();
@@ -147,8 +120,8 @@ describe("Discord と MCP の統合テスト", () => {
 
             // MCP ツールを使用してメッセージを送信しようとする
             await expect(
-                (mcpServer as any).callTool("send_discord_message", {
-                    content: "This should fail"
+                (mcpServer as any).callTool("send_discord_embed", {
+                    title: "This should fail"
                 })
             ).rejects.toThrow("Discord bot is not ready");
         });
@@ -167,9 +140,8 @@ describe("Discord と MCP の統合テスト", () => {
             const tools = await (mcpServer as any).listTools();
 
             // 期待されるツールが含まれていることを確認
-            expect(tools.tools).toHaveLength(3);
+            expect(tools.tools).toHaveLength(2);
             expect(tools.tools.map((t: any) => t.name)).toEqual([
-                "send_discord_message",
                 "send_discord_embed",
                 "send_discord_embed_with_feedback"
             ]);
@@ -192,8 +164,8 @@ describe("Discord と MCP の統合テスト", () => {
 
             // MCP ツールを使用してメッセージを送信しようとする
             await expect(
-                (mcpServer as any).callTool("send_discord_message", {
-                    content: "This will fail"
+                (mcpServer as any).callTool("send_discord_embed", {
+                    title: "This will fail"
                 })
             ).rejects.toThrow("Failed to send message to Discord: Discord API error");
         });

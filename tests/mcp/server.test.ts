@@ -56,38 +56,13 @@ describe("MCPServer", () => {
         it("利用可能なツールのリストを返す", async () => {
             const tools = await (mcpServer as any).listTools();
             
-            expect(tools.tools).toHaveLength(3);
-            expect(tools.tools.find((t: any) => t.name === "send_discord_message")).toBeDefined();
+            expect(tools.tools).toHaveLength(2);
             expect(tools.tools.find((t: any) => t.name === "send_discord_embed")).toBeDefined();
             expect(tools.tools.find((t: any) => t.name === "send_discord_embed_with_feedback")).toBeDefined();
         });
     });
 
     describe("callTool", () => {
-        describe("send_discord_message", () => {
-            it("Discord にメッセージを送信する", async () => {
-                const result = await (mcpServer as any).callTool("send_discord_message", {
-                    content: "Hello from MCP!"
-                });
-
-                expect(mockDiscordBot.sendMessage).toHaveBeenCalledWith("Hello from MCP!");
-                expect(result).toEqual({
-                    content: [
-                        {
-                            type: "text",
-                            text: "Message sent to Discord successfully"
-                        }
-                    ]
-                });
-            });
-
-            it("content パラメータが無い場合はエラーを返す", async () => {
-                await expect(
-                    (mcpServer as any).callTool("send_discord_message", {})
-                ).rejects.toThrow("Missing required parameter: content");
-            });
-        });
-
         describe("send_discord_embed", () => {
             it("Discord にEmbedメッセージを送信する", async () => {
                 const embedData = {
@@ -144,7 +119,7 @@ describe("MCPServer", () => {
             it("Discord にフィードバック付きEmbedメッセージを送信する", async () => {
                 // モック設定
                 mockDiscordBot.sendMessageWithFeedback = mock(() => Promise.resolve({
-                    response: 'yes',
+                    response: 'yes' as const,
                     userId: 'test-user-123',
                     responseTime: 1500
                 }));
@@ -189,7 +164,7 @@ describe("MCPServer", () => {
                 (newMcpServer as any).server = mockServer;
 
                 mockDiscordBot.sendMessageWithFeedback = mock(() => Promise.resolve({
-                    response: 'timeout',
+                    response: 'timeout' as const,
                     responseTime: 5000
                 }));
 
@@ -219,7 +194,7 @@ describe("MCPServer", () => {
             mockDiscordBot.getIsReady = mock(() => false);
 
             await expect(
-                (mcpServer as any).callTool("send_discord_message", { content: "test" })
+                (mcpServer as any).callTool("send_discord_embed", { title: "test" })
             ).rejects.toThrow("Discord bot is not ready");
         });
     });
@@ -229,7 +204,7 @@ describe("MCPServer", () => {
             mockDiscordBot.sendMessage = mock(() => Promise.reject(new Error("Discord error")));
 
             await expect(
-                (mcpServer as any).callTool("send_discord_message", { content: "test" })
+                (mcpServer as any).callTool("send_discord_embed", { title: "test" })
             ).rejects.toThrow("Failed to send message to Discord: Discord error");
         });
     });

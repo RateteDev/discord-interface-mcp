@@ -3,14 +3,6 @@
  */
 
 /**
- * Discord メッセージ送信ツールの引数
- */
-export interface SendDiscordMessageArgs {
-    /** 送信するメッセージ内容 */
-    content: string;
-}
-
-/**
  * Discord Embed 送信ツールの引数
  */
 export interface SendDiscordEmbedArgs {
