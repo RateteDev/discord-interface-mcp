@@ -4,50 +4,7 @@ Discord Interface MCPが提供するMCPツールの詳細な仕様とインタ�
 
 ## 利用可能なツール
 
-### 1. send_discord_message
-
-テキストメッセージをDiscordチャンネルに送信します。
-
-#### パラメータ
-
-| 名前 | 型 | 必須 | 説明 |
-|------|-----|------|------|
-| content | string | ✅ | 送信するメッセージ内容（最大2000文字） |
-
-#### 使用例
-
-**リクエスト:**
-```json
-{
-  "tool": "send_discord_message",
-  "arguments": {
-    "content": "Hello from MCP! 👋"
-  }
-}
-```
-
-**レスポンス:**
-```json
-{
-  "content": [
-    {
-      "type": "text",
-      "text": "Message sent to Discord successfully"
-    }
-  ]
-}
-```
-
-#### エラーケース
-
-- **Missing required parameter**: `content`パラメータが指定されていない
-- **Discord bot is not ready**: Botが接続されていない
-- **Channel not found**: 指定されたチャンネルが見つからない
-- **Channel is not a text channel**: テキストチャンネル以外を指定
-
----
-
-### 2. send_discord_embed
+### 1. send_discord_embed
 
 リッチなEmbedメッセージをDiscordチャンネルに送信します。
 
@@ -131,16 +88,66 @@ Discord Interface MCPが提供するMCPツールの詳細な仕様とインタ�
 | 紫 | 10181046 | 0x9b59b6 | 重要 |
 | グレー | 9807270 | 0x95a5a6 | 無効・完了 |
 
+### 2. send_discord_embed_with_feedback
+
+フィードバック機能付きのEmbedメッセージをDiscordチャンネルに送信します。Yes/Noボタンが表示され、ユーザーの選択を待機します。
+
+#### パラメータ
+
+| 名前 | 型 | 必須 | 説明 |
+|------|-----|------|------|
+| title | string | ❌ | Embedのタイトル（最大256文字） |
+| description | string | ❌ | Embedの説明文（最大4096文字） |
+| color | number | ❌ | Embedの色（10進数、e.g., 0x00ff00 = 65280） |
+| fields | Array | ❌ | フィールドの配列（最大25個） |
+| fields[].name | string | ✅* | フィールド名（最大256文字） |
+| fields[].value | string | ✅* | フィールド値（最大1024文字） |
+| fields[].inline | boolean | ❌ | インライン表示（デフォルト: false） |
+| feedbackPrompt | string | ❌ | ボタンの上に表示するテキスト（デフォルト: "Please select:"） |
+
+\* fieldsを使用する場合は必須
+
+#### 使用例
+
+**フィードバック付きEmbed:**
+```json
+{
+  "tool": "send_discord_embed_with_feedback",
+  "arguments": {
+    "title": "確認",
+    "description": "この操作を実行してもよろしいですか？",
+    "color": 16776960,
+    "feedbackPrompt": "選択してください:"
+  }
+}
+```
+
+**レスポンス:**
+```json
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "{\n  \"message\": \"Embed message sent and feedback received\",\n  \"feedback\": {\n    \"response\": \"yes\",\n    \"userId\": \"123456789012345678\",\n    \"responseTime\": 2500\n  }\n}"
+    }
+  ]
+}
+```
+
+#### フィードバックレスポンス
+
+| フィールド | 型 | 説明 |
+|-----------|-----|------|
+| response | string | "yes", "no", または "timeout" |
+| userId | string | ボタンをクリックしたユーザーのID（timeoutの場合は無し） |
+| responseTime | number | レスポンスまでの時間（ミリ秒） |
+
 ## 型定義
 
 ### TypeScript インターフェース
 
 ```typescript
 // MCPツール引数の型定義
-interface SendDiscordMessageArgs {
-  content: string;
-}
-
 interface SendDiscordEmbedArgs {
   title?: string;
   description?: string;
@@ -150,6 +157,18 @@ interface SendDiscordEmbedArgs {
     value: string;
     inline?: boolean;
   }>;
+}
+
+interface SendDiscordEmbedWithFeedbackArgs {
+  title?: string;
+  description?: string;
+  color?: number;
+  fields?: Array<{
+    name: string;
+    value: string;
+    inline?: boolean;
+  }>;
+  feedbackPrompt?: string;
 }
 ```
 
@@ -163,14 +182,6 @@ interface SendDiscordEmbedArgs {
 |-----------------|------|--------|
 | Discord bot is not ready | Botが起動していない | Botの接続を待つ |
 | Failed to send message to Discord | Discord API エラー | ログを確認、権限を確認 |
-
-### send_discord_message 固有のエラー
-
-| エラーメッセージ | 原因 | 対処法 |
-|-----------------|------|--------|
-| Missing required parameter: content | contentが未指定 | contentパラメータを追加 |
-| Channel not found | チャンネルIDが無効 | 正しいチャンネルIDを設定 |
-| Channel is not a text channel | 音声チャンネル等を指定 | テキストチャンネルを指定 |
 
 ## 使用上の注意
 
@@ -201,15 +212,6 @@ Discord APIにはレート制限があります：
 ### Claude Desktop での使用例
 
 ```javascript
-// テキストメッセージの送信
-await use_mcp_tool({
-  server_name: "discord-interface",
-  tool_name: "send_discord_message",
-  arguments: {
-    content: "ビルドが完了しました！"
-  }
-});
-
 // ステータス通知のEmbed送信
 await use_mcp_tool({
   server_name: "discord-interface", 

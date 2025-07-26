@@ -70,7 +70,7 @@ export class DiscordBot {
             if (!interaction.isButton()) return;
             
             const buttonInteraction = interaction as ButtonInteraction;
-            const [action, messageId] = buttonInteraction.customId.split(':');
+            const [action, messageId = ''] = buttonInteraction.customId.split(':');
             
             if (action === 'feedback_yes' || action === 'feedback_no') {
                 await this.handleFeedbackInteraction(buttonInteraction, action, messageId);

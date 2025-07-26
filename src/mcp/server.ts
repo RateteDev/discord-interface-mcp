@@ -9,7 +9,7 @@ import {
 import { logger } from "../utils/logger";
 import { env } from "../utils/env";
 import type { DiscordBot } from "../discord/bot";
-import type { SendDiscordMessageArgs, SendDiscordEmbedArgs, SendDiscordEmbedWithFeedbackArgs } from "../types/mcp";
+import type { SendDiscordEmbedArgs, SendDiscordEmbedWithFeedbackArgs } from "../types/mcp";
 
 /**
  * MCP サーバークラス
@@ -66,20 +66,6 @@ export class MCPServer {
     private async listTools(): Promise<{ tools: Tool[] }> {
         return {
             tools: [
-                {
-                    name: "send_discord_message",
-                    description: "Send a message to Discord channel",
-                    inputSchema: {
-                        type: "object",
-                        properties: {
-                            content: {
-                                type: "string",
-                                description: "The message content to send"
-                            }
-                        },
-                        required: ["content"]
-                    }
-                },
                 {
                     name: "send_discord_embed",
                     description: "Send a rich embed message to Discord channel",
@@ -172,9 +158,6 @@ export class MCPServer {
         }
 
         switch (name) {
-            case "send_discord_message":
-                return this.sendDiscordMessage(args);
-            
             case "send_discord_embed":
                 return this.sendDiscordEmbed(args);
             
@@ -183,36 +166,6 @@ export class MCPServer {
             
             default:
                 throw new Error(`Unknown tool: ${name}`);
-        }
-    }
-
-    /**
-     * Discord にテキストメッセージを送信
-     * @private
-     * @param args メッセージ送信引数
-     * @returns 送信結果
-     */
-    private async sendDiscordMessage(args: unknown): Promise<CallToolResult> {
-        const typedArgs = args as SendDiscordMessageArgs;
-        if (!typedArgs.content) {
-            throw new Error("Missing required parameter: content");
-        }
-
-        try {
-            await this.discordBot.sendMessage(typedArgs.content);
-            logger.info(`Sent message to Discord: ${typedArgs.content}`);
-            
-            return {
-                content: [
-                    {
-                        type: "text",
-                        text: "Message sent to Discord successfully"
-                    }
-                ]
-            };
-        } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : String(error);
-            throw new Error(`Failed to send message to Discord: ${errorMessage}`);
         }
     }
 
