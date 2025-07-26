@@ -33,21 +33,30 @@ Botセクションで以下の権限を有効化：
 
 ## 2. プロジェクトのセットアップ
 
-### 2.1 リポジトリのクローン
+### 2.1 npxで直接実行（推奨）
+
+最も簡単な方法は、npmパッケージとして公開されているものを直接実行することです：
 
 ```bash
-git clone https://github.com/RateteDev/discord-interface-mcp.git
-cd discord-interface-mcp
+# インストール不要で直接実行
+npx discord-interface-mcp
+
+# またはグローバルインストール
+npm install -g discord-interface-mcp
+discord-interface-mcp
 ```
 
-### 2.2 依存関係のインストール
+### 2.2 ソースコードから実行
+
+開発やカスタマイズを行う場合：
 
 ```bash
-# Bunを使用する場合（推奠）
-bun install
+# リポジトリのクローン
+git clone https://github.com/RateteDev/discord-interface-mcp.git
+cd discord-interface-mcp
 
-# npmを使用する場合
-npm install
+# 依存関係のインストール
+bun install  # または npm install
 ```
 
 ### 2.3 環境変数の設定
@@ -104,6 +113,25 @@ bun run dev
 ### 4.1 Claude Desktop の設定
 
 Claude Desktopの設定ファイル（`claude_desktop_config.json`）に以下を追加：
+
+#### npxを使用する場合（推奨）
+
+```json
+{
+  "mcpServers": {
+    "discord-interface": {
+      "command": "npx",
+      "args": ["discord-interface-mcp"],
+      "env": {
+        "DISCORD_BOT_TOKEN": "your-bot-token",
+        "DISCORD_CHANNEL_ID": "your-channel-id"
+      }
+    }
+  }
+}
+```
+
+#### ローカルビルドを使用する場合
 
 ```json
 {

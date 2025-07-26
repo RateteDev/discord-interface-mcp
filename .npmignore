@@ -1,0 +1,41 @@
+# Source files
+src/
+tests/
+
+# Development files
+.env
+.env.local
+*.test.ts
+*.spec.ts
+tsconfig.json
+bun.lock
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# Scripts
+scripts/
+
+# IDE
+.vscode/
+.idea/
+
+# Git
+.git/
+.gitignore
+
+# CI/CD
+.github/
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Development dependencies
+node_modules/
