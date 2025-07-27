@@ -37,6 +37,12 @@ export class DiscordBot {
         timeout?: NodeJS.Timeout;
         timestamp: number;
     }> = new Map();
+
+    private threadResolvers: Map<string, {
+        resolve: (value: { message: string; userId: string }) => void;
+        timeout?: NodeJS.Timeout;
+        timestamp: number;
+    }> = new Map();
     private cleanupInterval?: NodeJS.Timeout;
 
     /**
@@ -72,10 +78,30 @@ export class DiscordBot {
             if (!interaction.isButton()) return;
             
             const buttonInteraction = interaction as ButtonInteraction;
-            const [prefix, value, messageId = ''] = buttonInteraction.customId.split(':');
+            const parts = buttonInteraction.customId.split(':');
+            const prefix = parts[0];
+            const value = parts[1] || '';
             
-            if (prefix === 'feedback') {
-                await this.handleFeedbackInteraction(buttonInteraction, value, messageId);
+            if (prefix === 'feedback' && value) {
+                await this.handleFeedbackInteraction(buttonInteraction, value);
+            }
+        });
+
+        this.client.on(Events.MessageCreate, async (message) => {
+            // Botのメッセージは無視
+            if (message.author.bot) return;
+            
+            // スレッド内のメッセージかチェック
+            if (!message.channel.isThread()) return;
+            
+            const threadId = message.channel.id;
+            const resolver = this.threadResolvers.get(threadId);
+            
+            if (resolver) {
+                resolver.resolve({ 
+                    message: message.content, 
+                    userId: message.author.id 
+                });
             }
         });
     }
@@ -139,6 +165,13 @@ export class DiscordBot {
         }
         this.feedbackResolvers.clear();
         
+        for (const [threadId, resolver] of this.threadResolvers) {
+            if (resolver.timeout) {
+                clearTimeout(resolver.timeout);
+            }
+        }
+        this.threadResolvers.clear();
+        
         await this.client.destroy();
         this.isReady = false;
     }
@@ -176,7 +209,7 @@ export class DiscordBot {
             { label: "No", value: "no" }
         ],
         timeout?: number
-    ): Promise<{ response: string | 'timeout'; userId?: string; responseTime?: number; messageId?: string; channelId?: string; sentAt?: string }> {
+    ): Promise<{ response: string | 'timeout'; userId?: string; responseTime: number; messageId: string; channelId: string; sentAt: string }> {
         const startTime = Date.now();
         const timestamp = Date.now();
         
@@ -265,16 +298,124 @@ export class DiscordBot {
     }
 
     /**
+     * メッセージを送信してスレッドを開始
+     * @param content 送信するメッセージ内容（Embed）
+     * @param threadName スレッド名
+     * @returns スレッド作成情報
+     */
+    async sendMessageWithThread(
+        content: MessageCreateOptions,
+        threadName: string
+    ): Promise<{ messageId: string; threadId: string; channelId: string; sentAt: string }> {
+        const sentAt = new Date().toISOString();
+        
+        // Embedメッセージを送信
+        const message = await this.sendMessageInternal(content);
+        const messageId = message.id;
+        const channelId = message.channel.id;
+        
+        // スレッドを開始
+        const thread = await message.startThread({
+            name: threadName,
+            autoArchiveDuration: 60 // 1時間後に自動アーカイブ
+        });
+        const threadId = thread.id;
+        
+        return {
+            messageId,
+            threadId,
+            channelId,
+            sentAt
+        };
+    }
+
+    /**
+     * スレッドに返信し、オプションでユーザーの応答を待機
+     * @param threadId スレッドID
+     * @param content 送信するメッセージ内容（Embed）
+     * @param waitForReply 応答を待機するか（デフォルト: true）
+     * @param timeout タイムアウトミリ秒
+     * @returns 送信情報とオプションでユーザーの応答
+     */
+    async replyToThread(
+        threadId: string,
+        content: MessageCreateOptions,
+        waitForReply: boolean = true,
+        timeout?: number
+    ): Promise<{ messageId: string; threadId: string; sentAt: string; userReply?: { message: string | 'timeout'; userId?: string; responseTime: number } }> {
+        const startTime = Date.now();
+        const sentAt = new Date().toISOString();
+        
+        // スレッドチャンネルを取得
+        const thread = this.client.channels.cache.get(threadId);
+        if (!thread || !thread.isThread()) {
+            throw new Error("Thread not found or invalid thread ID");
+        }
+        
+        // メッセージを送信
+        const message = await thread.send(content);
+        const messageId = message.id;
+        
+        // 応答を待機しない場合は即座に返す
+        if (!waitForReply) {
+            return {
+                messageId,
+                threadId,
+                sentAt
+            };
+        }
+        
+        // 応答を待機する場合
+        return new Promise((resolve) => {
+            const timeoutMs = timeout || Number(process.env.DISCORD_FEEDBACK_TIMEOUT_SECONDS) * 1000 || 0;
+            let timeoutHandle: NodeJS.Timeout | undefined;
+            
+            if (timeoutMs > 0) {
+                timeoutHandle = setTimeout(() => {
+                    this.threadResolvers.delete(threadId);
+                    resolve({ 
+                        messageId,
+                        threadId,
+                        sentAt,
+                        userReply: {
+                            message: 'timeout',
+                            responseTime: Date.now() - startTime
+                        }
+                    });
+                }, timeoutMs);
+            }
+            
+            // resolverを登録
+            this.threadResolvers.set(threadId, {
+                resolve: (value) => {
+                    if (timeoutHandle) clearTimeout(timeoutHandle);
+                    this.threadResolvers.delete(threadId);
+                    resolve({ 
+                        messageId,
+                        threadId,
+                        sentAt,
+                        userReply: {
+                            message: value.message,
+                            userId: value.userId,
+                            responseTime: Date.now() - startTime
+                        }
+                    });
+                },
+                timeout: timeoutHandle,
+                timestamp: Date.now()
+            });
+        });
+    }
+
+    /**
      * フィードバックインタラクションを処理
      * @private
      * @param interaction ButtonInteraction
      * @param value ボタンの値
-     * @param messageId メッセージID
      */
     private async handleFeedbackInteraction(
         interaction: ButtonInteraction,
-        value: string,
-        messageId: string
+        value: string
     ): Promise<void> {
         try {
             const resolver = this.feedbackResolvers.get(interaction.message.id);
@@ -301,13 +442,14 @@ export class DiscordBot {
     }
 
     /**
-     * 古いfeedbackResolverをクリーンアップ
+     * 古いfeedbackResolverとthreadResolverをクリーンアップ
      * @private
      */
     private cleanupOldResolvers(): void {
         const now = Date.now();
         const maxAge = 5 * 60 * 1000; // 5分以上古いものをクリーンアップ
         
+        // feedbackResolversのクリーンアップ
         for (const [messageId, resolver] of this.feedbackResolvers) {
             if (now - resolver.timestamp > maxAge) {
                 if (resolver.timeout) {
@@ -315,6 +457,17 @@ export class DiscordBot {
                 }
                 this.feedbackResolvers.delete(messageId);
                 console.error(`[DEBUG] Cleaned up old feedback resolver for message ${messageId}`);
+            }
+        }
+        
+        // threadResolversのクリーンアップ
+        for (const [threadId, resolver] of this.threadResolvers) {
+            if (now - resolver.timestamp > maxAge) {
+                if (resolver.timeout) {
+                    clearTimeout(resolver.timeout);
+                }
+                this.threadResolvers.delete(threadId);
+                console.error(`[DEBUG] Cleaned up old thread resolver for thread ${threadId}`);
             }
         }
     }

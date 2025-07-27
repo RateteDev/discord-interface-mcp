@@ -140,10 +140,12 @@ describe("Discord と MCP の統合テスト", () => {
             const tools = await (mcpServer as any).listTools();
 
             // 期待されるツールが含まれていることを確認
-            expect(tools.tools).toHaveLength(2);
+            expect(tools.tools).toHaveLength(4);
             expect(tools.tools.map((t: any) => t.name)).toEqual([
                 "send_discord_embed",
-                "send_discord_embed_with_feedback"
+                "send_discord_embed_with_feedback",
+                "send_discord_embed_with_thread",
+                "reply_to_thread"
             ]);
         });
     });

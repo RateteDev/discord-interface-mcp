@@ -105,3 +105,39 @@ export const SendDiscordEmbedWithFeedbackArgsSchema = z.object({
 });
 
 export type SendDiscordEmbedWithFeedbackArgs = z.infer<typeof SendDiscordEmbedWithFeedbackArgsSchema>;
+
+/**
+ * Discord スレッド付きEmbed送信引数のスキーマ
+ */
+export const SendDiscordEmbedWithThreadArgsSchema = z.object({
+    title: z.string().optional(),
+    description: z.string().optional(),
+    color: ColorNameSchema.optional().transform((colorName) => 
+        colorName ? colorNameToHex(colorName) : undefined
+    ),
+    fields: z.array(EmbedFieldSchema).optional(),
+    threadName: z.string()
+        .min(1, "スレッド名は1文字以上である必要があります")
+        .max(100, "スレッド名は100文字以下である必要があります")
+});
+
+export type SendDiscordEmbedWithThreadArgs = z.infer<typeof SendDiscordEmbedWithThreadArgsSchema>;
+
+/**
+ * Discord スレッド返信引数のスキーマ
+ */
+export const ReplyToThreadArgsSchema = z.object({
+    threadId: z.string()
+        .min(1, "スレッドIDは必須です"),
+    title: z.string().optional(),
+    description: z.string().optional(),
+    color: ColorNameSchema.optional().transform((colorName) => 
+        colorName ? colorNameToHex(colorName) : undefined
+    ),
+    fields: z.array(EmbedFieldSchema).optional(),
+    waitForReply: z.boolean()
+        .optional()
+        .default(true)
+});
+
+export type ReplyToThreadArgs = z.infer<typeof ReplyToThreadArgsSchema>;

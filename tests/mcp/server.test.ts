@@ -68,9 +68,11 @@ describe("MCPServer", () => {
         it("利用可能なツールのリストを返す", async () => {
             const tools = await (mcpServer as any).listTools();
             
-            expect(tools.tools).toHaveLength(2);
+            expect(tools.tools).toHaveLength(4);
             expect(tools.tools.find((t: any) => t.name === "send_discord_embed")).toBeDefined();
             expect(tools.tools.find((t: any) => t.name === "send_discord_embed_with_feedback")).toBeDefined();
+            expect(tools.tools.find((t: any) => t.name === "send_discord_embed_with_thread")).toBeDefined();
+            expect(tools.tools.find((t: any) => t.name === "reply_to_thread")).toBeDefined();
         });
     });
 
