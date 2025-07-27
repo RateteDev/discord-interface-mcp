@@ -61,7 +61,6 @@ Claude Desktopの設定ファイル（`claude_desktop_config.json`）に以下�
 - `DISCORD_GUILD_ID`: 使用するサーバーのID
 - `DISCORD_TEXT_CHANNEL_ID`: メッセージを送信するチャンネルのID
 
-詳細な設定方法は[setup-guide.md](./docs/setup-guide.md)を参照してください。
 
 ## 使用方法
 
@@ -70,7 +69,7 @@ Claude Desktopの設定ファイル（`claude_desktop_config.json`）に以下�
 - `send_discord_embed`: Embedメッセージを送信
 - `send_discord_embed_with_feedback`: フィードバック機能付きEmbedを送信
 
-詳細なAPIリファレンスは[api-reference.md](./docs/api-reference.md)を参照してください。
+詳細なMCPサーバーリファレンスは[mcp-server-reference.md](./docs/mcp-server-reference.md)を参照してください。
 
 ### 開発者向け
 

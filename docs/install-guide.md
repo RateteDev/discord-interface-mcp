@@ -6,18 +6,44 @@
 
 - Node.js 18以上
 - Claude DesktopまたはClaude Code
-- Discord Botの準備（[setup-guide.md](./setup-guide.md)参照）
+- Discord アカウントと管理権限を持つサーバー
+
+## Discord Bot の作成
+
+### 1. Discord Developer Portal での設定
+
+1. [Discord Developer Portal](https://discord.com/developers/applications)にアクセス
+2. 「New Application」をクリックしてアプリケーションを作成
+3. 左メニューの「Bot」を選択
+4. 「Reset Token」をクリックしてトークンを生成（後で使用）
+
+### 2. Bot の権限設定
+
+Botセクションで以下の権限を有効化：
+- **Send Messages** - メッセージ送信
+- **Embed Links** - Embedメッセージ送信
+- **Read Message History** - メッセージ履歴読み取り（オプション）
+
+### 3. Bot をサーバーに招待
+
+1. 左メニューの「OAuth2」→「URL Generator」を選択
+2. Scopesで「bot」を選択
+3. Bot Permissionsで必要な権限を選択
+4. 生成されたURLにアクセスしてBotを招待
+
+### 4. 必要な情報を取得
+
+以下の情報を取得してメモしておきます：
+
+- **DISCORD_BOT_TOKEN**: Developer Portalで生成したトークン
+- **DISCORD_GUILD_ID**: サーバーを右クリック→「IDをコピー」
+- **DISCORD_TEXT_CHANNEL_ID**: チャンネルを右クリック→「IDをコピー」
+
+> **注意**: Discord開発者モードを有効にする必要があります（設定→詳細設定→開発者モード）
 
 ## Claude Desktop での設定
 
-### 1. 必要な情報を準備
-
-以下の情報を事前に用意してください：
-- `DISCORD_BOT_TOKEN`: Discord Botのトークン
-- `DISCORD_GUILD_ID`: 使用するサーバー（ギルド）のID
-- `DISCORD_TEXT_CHANNEL_ID`: メッセージを送信するチャンネルのID
-
-### 2. 設定ファイルを編集
+### 1. 設定ファイルを編集
 
 Claude Desktopの設定ファイルを開きます：
 
@@ -25,11 +51,11 @@ Claude Desktopの設定ファイルを開きます：
 **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`  
 **Linux**: `~/.config/Claude/claude_desktop_config.json`
 
-### 3. MCPサーバー設定を追加
+### 2. MCPサーバー設定を追加
 
 以下の設定を`mcpServers`セクションに追加します：
 
-```json
+```jsonc
 {
   "mcpServers": {
     "discord-interface": {
@@ -47,7 +73,7 @@ Claude Desktopの設定ファイルを開きます：
 
 > **注意**: `YOUR_*_HERE`の部分を実際の値に置き換えてください
 
-### 4. Claude Desktopを再起動
+### 3. Claude Desktopを再起動
 
 設定を反映させるため、Claude Desktopを完全に終了してから再起動します。
 
@@ -111,12 +137,12 @@ claude mcp remove discord-interface
 フィードバック機能のタイムアウトを設定する場合：
 
 **Claude Desktop:**
-```json
+```jsonc
 "env": {
   "DISCORD_BOT_TOKEN": "...",
   "DISCORD_GUILD_ID": "...",
   "DISCORD_TEXT_CHANNEL_ID": "...",
-  "DISCORD_FEEDBACK_TIMEOUT_SECONDS": "30"
+  "DISCORD_FEEDBACK_TIMEOUT_SECONDS": "30"  // optional: デフォルトは60秒
 }
 ```
 
@@ -141,6 +167,15 @@ claude mcp add discord-interface \
 
 ## トラブルシューティング
 
+### Bot がオンラインにならない
+- Botトークンが正しいか確認
+- インターネット接続を確認
+
+### メッセージが送信されない
+- チャンネルIDが正しいか確認
+- Botがチャンネルへのアクセス権限を持っているか確認
+- チャンネルがテキストチャンネルであることを確認
+
 ### MCPサーバーが表示されない
 
 1. JSON構文が正しいか確認（カンマの位置など）
@@ -163,16 +198,8 @@ claude mcp add discord-interface \
 
 - Discord Botトークンは秘密情報です。他人と共有しないでください
 - 設定ファイルをGitにコミットしないよう注意してください
-- `.gitignore`に設定ファイルのパスを追加することを推奨します
 
 ## 次のステップ
 
-- Discord Botの作成がまだの場合は[setup-guide.md](./setup-guide.md)を参照
-- 使用方法については[api-reference.md](./api-reference.md)を参照
-
-## npxを使用する利点
-
-- 事前のインストールが不要
-- 常に最新版を自動的に使用
-- グローバルな名前空間を汚染しない
-- 異なるプロジェクトで異なるバージョンを使用可能
+- 使用方法については[mcp-server-reference.md](./mcp-server-reference.md)を参照
+- 開発者向けの情報は[implementation-guide.md](./implementation-guide.md)を参照

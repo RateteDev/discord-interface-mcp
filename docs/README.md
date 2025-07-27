@@ -5,15 +5,13 @@ Discord Interface MCPの技術ドキュメントです。このプロジェク�
 ## 📚 ドキュメント一覧
 
 ### 基本情報
-- [セットアップガイド](setup-guide.md) - インストールと初期設定
+- [インストールガイド](install-guide.md) - インストールと初期設定
 - [アーキテクチャ](architecture.md) - システム構成と設計思想
 
 ### 開発者向け
-- [APIリファレンス](api-reference.md) - ツールとインターフェースの詳細
+- [MCPサーバーリファレンス](mcp-server-reference.md) - ツールとインターフェースの詳細
 - [実装ガイド](implementation-guide.md) - 拡張開発のための実装詳細
 
-### 設定サンプル
-- [Claude Desktop設定例](claude-desktop-config-example.json) - MCPクライアント設定
 
 ## 🚀 クイックスタート
 
@@ -23,7 +21,7 @@ Discord Interface MCPの技術ドキュメントです。このプロジェク�
 4. `bun run build` でビルド
 5. MCPクライアントに設定を追加
 
-詳細は[セットアップガイド](setup-guide.md)を参照してください。
+詳細は[インストールガイド](install-guide.md)を参照してください。
 
 ## 📝 バージョン情報
 

@@ -178,7 +178,7 @@ npx discord-interface-mcp@{version}
 
 🔗 **リンク**
 - [npm package](https://www.npmjs.com/package/discord-interface-mcp/v/{version})
-- [インストールガイド](./docs/install-guide.md)
+- [インストールガイド](./install-guide.md)
 ```
 
 ## 🎨 npxを使用するメリット
