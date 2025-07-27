@@ -110,7 +110,7 @@ znvとzodを使用した型安全な環境変数管理：
 ```typescript
 export const env = parseEnv(process.env, {
   DISCORD_BOT_TOKEN: z.string().min(1),
-  DISCORD_CLIENT_ID: z.string().min(1),
+  DISCORD_GUILD_ID: z.string().min(1),
   // ... その他の設定
 });
 ```

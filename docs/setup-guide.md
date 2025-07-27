@@ -66,7 +66,6 @@ bun install  # または npm install
 ```env
 # Discord設定
 DISCORD_BOT_TOKEN=your-bot-token-here
-DISCORD_CLIENT_ID=your-client-id-here
 DISCORD_GUILD_ID=your-guild-id-here
 DISCORD_TEXT_CHANNEL_ID=your-channel-id-here
 
@@ -78,7 +77,6 @@ NODE_ENV=production
 #### 環境変数の取得方法
 
 - **DISCORD_BOT_TOKEN**: Developer Portalで生成したトークン
-- **DISCORD_CLIENT_ID**: Developer PortalのアプリケーションID
 - **DISCORD_GUILD_ID**: サーバーを右クリック→「IDをコピー」
 - **DISCORD_TEXT_CHANNEL_ID**: チャンネルを右クリック→「IDをコピー」
 
@@ -142,7 +140,6 @@ Claude Desktopの設定ファイル（`claude_desktop_config.json`）に以下�
       "env": {
         "NODE_ENV": "production",
         "DISCORD_BOT_TOKEN": "your-bot-token",
-        "DISCORD_CLIENT_ID": "your-client-id",
         "DISCORD_GUILD_ID": "your-guild-id",
         "DISCORD_TEXT_CHANNEL_ID": "your-channel-id"
       }
@@ -175,7 +172,6 @@ Claude Desktopの設定ファイル（`claude_desktop_config.json`）に以下�
 # 環境変数を直接指定して実行
 npx @modelcontextprotocol/inspector \
   -e DISCORD_BOT_TOKEN=your-token \
-  -e DISCORD_CLIENT_ID=your-client-id \
   -e DISCORD_GUILD_ID=your-guild-id \
   -e DISCORD_TEXT_CHANNEL_ID=your-channel-id \
   bun src/index.ts

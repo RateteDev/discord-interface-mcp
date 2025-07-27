@@ -31,47 +31,11 @@ Discord Interface MCPは、Discordをインターフェースとして活用す�
 
 ## インストール
 
-### npxで直接実行（推奨）
+詳細なインストール手順については[install-guide.md](./docs/install-guide.md)を参照してください。
 
-```bash
-# npxで直接実行（インストール不要）
-npx discord-interface-mcp
+### クイックスタート
 
-# またはグローバルインストール
-npm install -g discord-interface-mcp
-discord-interface-mcp
-```
-
-### ソースコードから実行
-
-```bash
-# リポジトリのクローン
-git clone https://github.com/RateteDev/discord-interface-mcp.git
-cd discord-interface-mcp
-
-# 依存関係のインストール
-bun install
-
-# 環境変数の設定
-cp .env.example .env
-# .envファイルを編集してDiscordのトークン等を設定
-```
-
-## 環境変数
-
-`.env`ファイルに以下の環境変数を設定してください：
-
-```env
-DISCORD_BOT_TOKEN=your-discord-bot-token-here
-DISCORD_CLIENT_ID=your-discord-client-id-here
-DISCORD_GUILD_ID=your-discord-guild-id-here
-```
-
-## 使用方法
-
-### Claude Desktopでの設定
-
-`claude_desktop_config.json`に以下を追加：
+Claude Desktopの設定ファイル（`claude_desktop_config.json`）に以下を追加：
 
 ```json
 {
@@ -80,13 +44,33 @@ DISCORD_GUILD_ID=your-discord-guild-id-here
       "command": "npx",
       "args": ["discord-interface-mcp"],
       "env": {
-        "DISCORD_BOT_TOKEN": "your-discord-bot-token",
-        "DISCORD_CHANNEL_ID": "your-channel-id"
+        "DISCORD_BOT_TOKEN": "your-bot-token",
+        "DISCORD_GUILD_ID": "your-guild-id",
+        "DISCORD_TEXT_CHANNEL_ID": "your-channel-id"
       }
     }
   }
 }
 ```
+
+## 必要な設定
+
+以下の情報が必要です：
+
+- `DISCORD_BOT_TOKEN`: Discord Botのトークン
+- `DISCORD_GUILD_ID`: 使用するサーバーのID
+- `DISCORD_TEXT_CHANNEL_ID`: メッセージを送信するチャンネルのID
+
+詳細な設定方法は[setup-guide.md](./docs/setup-guide.md)を参照してください。
+
+## 使用方法
+
+### 利用可能なツール
+
+- `send_discord_embed`: Embedメッセージを送信
+- `send_discord_embed_with_feedback`: フィードバック機能付きEmbedを送信
+
+詳細なAPIリファレンスは[api-reference.md](./docs/api-reference.md)を参照してください。
 
 ### 開発者向け
 
