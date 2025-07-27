@@ -52,8 +52,8 @@ Botセクションで以下の権限を有効化：
 
 Claude Desktopの設定ファイルを開きます：
 
-**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`  
-**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`  
+**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 **Linux**: `~/.config/Claude/claude_desktop_config.json`
 
 ### 2. MCPサーバー設定を追加
@@ -69,7 +69,8 @@ Claude Desktopの設定ファイルを開きます：
       "env": {
         "DISCORD_BOT_TOKEN": "YOUR_BOT_TOKEN_HERE",
         "DISCORD_GUILD_ID": "YOUR_GUILD_ID_HERE",
-        "DISCORD_TEXT_CHANNEL_ID": "YOUR_CHANNEL_ID_HERE"
+        "DISCORD_TEXT_CHANNEL_ID": "YOUR_CHANNEL_ID_HERE",
+        "DISCORD_FEEDBACK_TIMEOUT_SECONDS": "30" // optional: フィードバックタイムアウト（デフォルトはタイムアウト無し）
       }
     }
   }
@@ -94,29 +95,27 @@ npm install -g @anthropic-ai/claude-code
 
 プロジェクトディレクトリで以下のコマンドを実行：
 
-**Bash/Zsh:**
+**Bash/Zsh (macOS/Linux):**
 ```bash
-# MCPサーバーを追加（環境変数付き）
-claude mcp add discord-interface \
-  --command npx \
-  --args discord-interface-mcp \
-  --env DISCORD_BOT_TOKEN="YOUR_BOT_TOKEN_HERE" \
-  --env DISCORD_GUILD_ID="YOUR_GUILD_ID_HERE" \
-  --env DISCORD_TEXT_CHANNEL_ID="YOUR_CHANNEL_ID_HERE"
+claude mcp add discord-interface npx discord-interface-mcp \
+  -e DISCORD_BOT_TOKEN="YOUR_BOT_TOKEN_HERE" \
+  -e DISCORD_GUILD_ID="YOUR_GUILD_ID_HERE" \
+  -e DISCORD_TEXT_CHANNEL_ID="YOUR_CHANNEL_ID_HERE" \
+  -e DISCORD_FEEDBACK_TIMEOUT_SECONDS="30"
 ```
 
-**PowerShell:**
+**PowerShell (Windows):**
 ```powershell
-# MCPサーバーを追加（環境変数付き）
-claude mcp add discord-interface `
-  --command npx `
-  --args discord-interface-mcp `
-  --env DISCORD_BOT_TOKEN="YOUR_BOT_TOKEN_HERE" `
-  --env DISCORD_GUILD_ID="YOUR_GUILD_ID_HERE" `
-  --env DISCORD_TEXT_CHANNEL_ID="YOUR_CHANNEL_ID_HERE"
+claude mcp add discord-interface cmd /c npx discord-interface-mcp `
+  -e DISCORD_BOT_TOKEN="YOUR_BOT_TOKEN_HERE" `
+  -e DISCORD_GUILD_ID="YOUR_GUILD_ID_HERE" `
+  -e DISCORD_TEXT_CHANNEL_ID="YOUR_CHANNEL_ID_HERE" `
+  -e DISCORD_FEEDBACK_TIMEOUT_SECONDS="30"
 ```
 
 > **注意**: `YOUR_*_HERE`の部分を実際の値に置き換えてください
+> 
+> ⚠️ **セキュリティ**: コマンド実行後は履歴からトークンを削除することを推奨します
 
 ### 3. Claude Codeを起動
 
@@ -135,32 +134,6 @@ claude mcp list
 claude mcp remove discord-interface
 ```
 
-## オプション設定
-
-### フィードバックタイムアウト
-
-フィードバック機能のタイムアウトを設定する場合：
-
-**Claude Desktop:**
-```jsonc
-"env": {
-  "DISCORD_BOT_TOKEN": "...",
-  "DISCORD_GUILD_ID": "...",
-  "DISCORD_TEXT_CHANNEL_ID": "...",
-  "DISCORD_FEEDBACK_TIMEOUT_SECONDS": "30"  // optional: デフォルトは60秒
-}
-```
-
-**Claude Code:**
-```bash
-claude mcp add discord-interface \
-  --command npx \
-  --args discord-interface-mcp \
-  --env DISCORD_BOT_TOKEN="..." \
-  --env DISCORD_GUILD_ID="..." \
-  --env DISCORD_TEXT_CHANNEL_ID="..." \
-  --env DISCORD_FEEDBACK_TIMEOUT_SECONDS="30"
-```
 
 ## 動作確認
 
