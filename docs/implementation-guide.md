@@ -2,20 +2,6 @@
 
 このガイドでは、Discord Interface MCPの内部実装と拡張方法について説明します。
 
-## アーキテクチャ概要
-
-```
-┌─────────────────┐     JSON-RPC      ┌──────────────┐     WebSocket    ┌─────────────┐
-│  MCP Client     │ ◄──────────────► │  MCP Server  │ ◄──────────────► │  Discord    │
-│ (Claude等)      │      stdio        │              │                   │  Gateway    │
-└─────────────────┘                   └──────────────┘                   └─────────────┘
-                                             │
-                                             ▼
-                                      ┌──────────────┐
-                                      │ Discord Bot  │
-                                      └──────────────┘
-```
-
 ## コンポーネント詳細
 
 ### 1. エントリーポイント (`src/index.ts`)
@@ -45,13 +31,13 @@ Discord.jsを使用したBot実装です。
 class DiscordBot {
   // Botの開始
   async start(): Promise<void>
-  
+
   // メッセージ送信（テキスト/Embed両対応）
   async sendMessage(content: string | MessageCreateOptions): Promise<void>
-  
+
   // Botの停止
   async stop(): Promise<void>
-  
+
   // 準備状態の確認
   getIsReady(): boolean
 }
@@ -115,15 +101,6 @@ export const env = parseEnv(process.env, {
 });
 ```
 
-### ロギング (`src/utils/logger.ts`)
-
-pinoを使用した構造化ログ：
-
-```typescript
-// 重要: stderrへの出力（MCPプロトコルとの競合回避）
-destination: 2  // 2 = stderr
-```
-
 ## 新しいツールの追加方法
 
 ### ステップ1: 型定義の追加
@@ -153,7 +130,7 @@ export interface SendDiscordReactionArgs {
         description: "The ID of the message to react to"
       },
       emoji: {
-        type: "string", 
+        type: "string",
         description: "The emoji to react with"
       }
     },
@@ -176,19 +153,19 @@ case "send_discord_reaction":
 ```typescript
 private async sendDiscordReaction(args: unknown): Promise<CallToolResult> {
   const typedArgs = args as SendDiscordReactionArgs;
-  
+
   // バリデーション
   if (!typedArgs.messageId || !typedArgs.emoji) {
     throw new Error("Missing required parameters");
   }
-  
+
   try {
     // Discord Botのメソッドを呼び出し
     await this.discordBot.addReaction(
-      typedArgs.messageId, 
+      typedArgs.messageId,
       typedArgs.emoji
     );
-    
+
     return {
       content: [{
         type: "text",
@@ -211,12 +188,12 @@ async addReaction(messageId: string, emoji: string): Promise<void> {
   if (!this.isReady) {
     throw new Error("Bot is not ready");
   }
-  
+
   const channel = this.client.channels.cache.get(this.config.textChannelId);
   if (!channel || !channel.isTextBased()) {
     throw new Error("Invalid channel");
   }
-  
+
   try {
     const message = await channel.messages.fetch(messageId);
     await message.react(emoji);
@@ -348,4 +325,3 @@ if ('send' in channel) {
 2. 適切なテストを追加
 3. ドキュメントを更新
 
-詳細は[CONTRIBUTING.md](../CONTRIBUTING.md)を参照してください。
