@@ -98,6 +98,13 @@ export class DiscordBot {
             const resolver = this.threadResolvers.get(threadId);
             
             if (resolver) {
+                // メッセージを受信したことを示すリアクションを追加
+                try {
+                    await message.react('✅');
+                } catch (error) {
+                    console.error('[ERROR] Failed to add reaction:', error);
+                }
+                
                 resolver.resolve({ 
                     message: message.content, 
                     userId: message.author.id 
