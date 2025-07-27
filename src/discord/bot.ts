@@ -35,7 +35,9 @@ export class DiscordBot {
     private feedbackResolvers: Map<string, {
         resolve: (value: { response: string; userId: string }) => void;
         timeout?: NodeJS.Timeout;
+        timestamp: number;
     }> = new Map();
+    private cleanupInterval?: NodeJS.Timeout;
 
     /**
      * コンストラクタ
@@ -87,6 +89,11 @@ export class DiscordBot {
             console.error("[INFO] Starting Discord bot...");
             this.setupEventHandlers();
             await this.client.login(this.config.token);
+            
+            // メモリリーク対策: 定期的な古いresolverのクリーンアップ
+            this.cleanupInterval = setInterval(() => {
+                this.cleanupOldResolvers();
+            }, 60000); // 1分ごとにクリーンアップ
         } catch (error) {
             console.error("[ERROR] Failed to start Discord bot:", error);
             throw error;
@@ -99,42 +106,16 @@ export class DiscordBot {
      * @returns Promise<{messageId: string, channelId: string, sentAt: string}>
      */
     async sendMessage(content: string | MessageCreateOptions): Promise<{messageId: string, channelId: string, sentAt: string}> {
-        if (!this.isReady) {
-            throw new Error("Bot is not ready");
-        }
-
-        const channel = this.client.channels.cache.get(this.config.textChannelId);
+        const message = await this.sendMessageInternal(content);
+        const sentAt = new Date().toISOString();
         
-        if (!channel) {
-            throw new Error("Channel not found");
-        }
-
-        if (!channel.isTextBased()) {
-            throw new Error("Channel is not a text channel");
-        }
-
-        try {
-            const sentAt = new Date().toISOString();
-            let message: Message;
-            
-            // Type guard ensures channel is TextBasedChannel
-            if ('send' in channel) {
-                message = await channel.send(content);
-            } else {
-                throw new Error("Channel does not support sending messages");
-            }
-            
-            console.error(`[DEBUG] Message sent to channel ${this.config.textChannelId}`);
-            
-            return {
-                messageId: message.id,
-                channelId: this.config.textChannelId,
-                sentAt
-            };
-        } catch (error) {
-            console.error("[ERROR] Failed to send message:", error);
-            throw error;
-        }
+        console.error(`[DEBUG] Message sent to channel ${this.config.textChannelId}`);
+        
+        return {
+            messageId: message.id,
+            channelId: this.config.textChannelId,
+            sentAt
+        };
     }
 
     /**
@@ -143,6 +124,21 @@ export class DiscordBot {
      */
     async stop(): Promise<void> {
         console.error("[INFO] Stopping Discord bot...");
+        
+        // クリーンアップ
+        if (this.cleanupInterval) {
+            clearInterval(this.cleanupInterval);
+            this.cleanupInterval = undefined;
+        }
+        
+        // 残っているタイムアウトをクリア
+        for (const [messageId, resolver] of this.feedbackResolvers) {
+            if (resolver.timeout) {
+                clearTimeout(resolver.timeout);
+            }
+        }
+        this.feedbackResolvers.clear();
+        
         await this.client.destroy();
         this.isReady = false;
     }
@@ -201,7 +197,7 @@ export class DiscordBot {
             components: [row]
         };
 
-        const message = await this.sendMessageAndGetMessage(messageOptions);
+        const message = await this.sendMessageInternal(messageOptions);
         const messageId = message.id;
         const sentAt = new Date().toISOString();
 
@@ -229,18 +225,19 @@ export class DiscordBot {
                         sentAt
                     });
                 },
-                timeout: timeoutHandle
+                timeout: timeoutHandle,
+                timestamp: Date.now()
             });
         });
     }
 
     /**
-     * メッセージを送信してMessageオブジェクトを返す
+     * メッセージを送信してMessageオブジェクトを返す（内部メソッド）
      * @private
      * @param content 送信するメッセージ内容
      * @returns 送信されたMessage
      */
-    private async sendMessageAndGetMessage(content: string | MessageCreateOptions): Promise<Message> {
+    private async sendMessageInternal(content: string | MessageCreateOptions): Promise<Message> {
         if (!this.isReady) {
             throw new Error("Bot is not ready");
         }
@@ -300,6 +297,25 @@ export class DiscordBot {
                 content: 'An error occurred while processing your feedback.',
                 ephemeral: true
             }).catch(() => {});
+        }
+    }
+
+    /**
+     * 古いfeedbackResolverをクリーンアップ
+     * @private
+     */
+    private cleanupOldResolvers(): void {
+        const now = Date.now();
+        const maxAge = 5 * 60 * 1000; // 5分以上古いものをクリーンアップ
+        
+        for (const [messageId, resolver] of this.feedbackResolvers) {
+            if (now - resolver.timestamp > maxAge) {
+                if (resolver.timeout) {
+                    clearTimeout(resolver.timeout);
+                }
+                this.feedbackResolvers.delete(messageId);
+                console.error(`[DEBUG] Cleaned up old feedback resolver for message ${messageId}`);
+            }
         }
     }
 }
