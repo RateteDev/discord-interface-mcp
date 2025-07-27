@@ -107,6 +107,8 @@ Discord Interface MCPが提供するMCPツールの詳細な仕様とインタ�
 
 \* fieldsを使用する場合は必須
 
+※ フィードバックのタイムアウトは環境変数 `DISCORD_FEEDBACK_TIMEOUT_SECONDS` で設定できます（秒単位、デフォルトはタイムアウト無し）
+
 #### 使用例
 
 **フィードバック付きEmbed:**

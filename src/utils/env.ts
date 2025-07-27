@@ -11,10 +11,9 @@ export const env = parseEnv(process.env, {
     LOG_LEVEL: z.enum(["info", "debug", "warn", "error"]).default("info"),
 
     DISCORD_BOT_TOKEN: z.string().min(1),
-    DISCORD_CLIENT_ID: z.string().min(1),
     DISCORD_GUILD_ID: z.string().min(1),
     DISCORD_TEXT_CHANNEL_ID: z.string().min(1),
-    DISCORD_FEEDBACK_TIMEOUT: z.string().optional().transform(val => 
+    DISCORD_FEEDBACK_TIMEOUT_SECONDS: z.string().optional().transform(val => 
         val ? parseInt(val, 10) : undefined
     ),
 });

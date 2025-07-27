@@ -232,12 +232,13 @@ export class MCPServer {
             if (typedArgs.fields) embed.fields = typedArgs.fields;
 
             const feedbackPrompt = typedArgs.feedbackPrompt || "Please select:";
-            const timeout = env.DISCORD_FEEDBACK_TIMEOUT;
+            const timeoutSeconds = env.DISCORD_FEEDBACK_TIMEOUT_SECONDS;
+            const timeoutMs = timeoutSeconds ? timeoutSeconds * 1000 : undefined;
 
             const feedbackResult = await this.discordBot.sendMessageWithFeedback(
                 { embeds: [embed] },
                 feedbackPrompt,
-                timeout
+                timeoutMs
             );
             
             logger.info(`Sent embed with feedback to Discord. Response: ${feedbackResult.response}`);

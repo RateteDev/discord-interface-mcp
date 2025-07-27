@@ -31,30 +31,48 @@ Discord Interface MCPは、Discordをインターフェースとして活用す�
 
 ## インストール
 
-```bash
-# リポジトリのクローン
-git clone https://github.com/RateteDev/discord-interface-mcp.git
-cd discord-interface-mcp
+詳細なインストール手順については[install-guide.md](./docs/install-guide.md)を参照してください。
 
-# 依存関係のインストール
-bun install
+### クイックスタート
 
-# 環境変数の設定
-cp .env.example .env
-# .envファイルを編集してDiscordのトークン等を設定
+Claude Desktopの設定ファイル（`claude_desktop_config.json`）に以下を追加：
+
+```json
+{
+  "mcpServers": {
+    "discord-interface": {
+      "command": "npx",
+      "args": ["discord-interface-mcp"],
+      "env": {
+        "DISCORD_BOT_TOKEN": "your-bot-token",
+        "DISCORD_GUILD_ID": "your-guild-id",
+        "DISCORD_TEXT_CHANNEL_ID": "your-channel-id"
+      }
+    }
+  }
+}
 ```
 
-## 環境変数
+## 必要な設定
 
-`.env`ファイルに以下の環境変数を設定してください：
+以下の情報が必要です：
 
-```env
-DISCORD_BOT_TOKEN=your-discord-bot-token-here
-DISCORD_CLIENT_ID=your-discord-client-id-here
-DISCORD_GUILD_ID=your-discord-guild-id-here
-```
+- `DISCORD_BOT_TOKEN`: Discord Botのトークン
+- `DISCORD_GUILD_ID`: 使用するサーバーのID
+- `DISCORD_TEXT_CHANNEL_ID`: メッセージを送信するチャンネルのID
+
+詳細な設定方法は[setup-guide.md](./docs/setup-guide.md)を参照してください。
 
 ## 使用方法
+
+### 利用可能なツール
+
+- `send_discord_embed`: Embedメッセージを送信
+- `send_discord_embed_with_feedback`: フィードバック機能付きEmbedを送信
+
+詳細なAPIリファレンスは[api-reference.md](./docs/api-reference.md)を参照してください。
+
+### 開発者向け
 
 ```bash
 # 開発モードで起動
@@ -65,6 +83,9 @@ bun run build
 
 # プロダクション実行
 bun run start
+
+# テスト実行
+bun test
 ```
 
 ## プロジェクト構造

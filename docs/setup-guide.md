@@ -33,21 +33,30 @@ Botセクションで以下の権限を有効化：
 
 ## 2. プロジェクトのセットアップ
 
-### 2.1 リポジトリのクローン
+### 2.1 npxで直接実行（推奨）
+
+最も簡単な方法は、npmパッケージとして公開されているものを直接実行することです：
 
 ```bash
-git clone https://github.com/RateteDev/discord-interface-mcp.git
-cd discord-interface-mcp
+# インストール不要で直接実行
+npx discord-interface-mcp
+
+# またはグローバルインストール
+npm install -g discord-interface-mcp
+discord-interface-mcp
 ```
 
-### 2.2 依存関係のインストール
+### 2.2 ソースコードから実行
+
+開発やカスタマイズを行う場合：
 
 ```bash
-# Bunを使用する場合（推奠）
-bun install
+# リポジトリのクローン
+git clone https://github.com/RateteDev/discord-interface-mcp.git
+cd discord-interface-mcp
 
-# npmを使用する場合
-npm install
+# 依存関係のインストール
+bun install  # または npm install
 ```
 
 ### 2.3 環境変数の設定
@@ -57,7 +66,6 @@ npm install
 ```env
 # Discord設定
 DISCORD_BOT_TOKEN=your-bot-token-here
-DISCORD_CLIENT_ID=your-client-id-here
 DISCORD_GUILD_ID=your-guild-id-here
 DISCORD_TEXT_CHANNEL_ID=your-channel-id-here
 
@@ -69,7 +77,6 @@ NODE_ENV=production
 #### 環境変数の取得方法
 
 - **DISCORD_BOT_TOKEN**: Developer Portalで生成したトークン
-- **DISCORD_CLIENT_ID**: Developer PortalのアプリケーションID
 - **DISCORD_GUILD_ID**: サーバーを右クリック→「IDをコピー」
 - **DISCORD_TEXT_CHANNEL_ID**: チャンネルを右クリック→「IDをコピー」
 
@@ -105,6 +112,25 @@ bun run dev
 
 Claude Desktopの設定ファイル（`claude_desktop_config.json`）に以下を追加：
 
+#### npxを使用する場合（推奨）
+
+```json
+{
+  "mcpServers": {
+    "discord-interface": {
+      "command": "npx",
+      "args": ["discord-interface-mcp"],
+      "env": {
+        "DISCORD_BOT_TOKEN": "your-bot-token",
+        "DISCORD_CHANNEL_ID": "your-channel-id"
+      }
+    }
+  }
+}
+```
+
+#### ローカルビルドを使用する場合
+
 ```json
 {
   "mcpServers": {
@@ -114,7 +140,6 @@ Claude Desktopの設定ファイル（`claude_desktop_config.json`）に以下�
       "env": {
         "NODE_ENV": "production",
         "DISCORD_BOT_TOKEN": "your-bot-token",
-        "DISCORD_CLIENT_ID": "your-client-id",
         "DISCORD_GUILD_ID": "your-guild-id",
         "DISCORD_TEXT_CHANNEL_ID": "your-channel-id"
       }
@@ -147,7 +172,6 @@ Claude Desktopの設定ファイル（`claude_desktop_config.json`）に以下�
 # 環境変数を直接指定して実行
 npx @modelcontextprotocol/inspector \
   -e DISCORD_BOT_TOKEN=your-token \
-  -e DISCORD_CLIENT_ID=your-client-id \
   -e DISCORD_GUILD_ID=your-guild-id \
   -e DISCORD_TEXT_CHANNEL_ID=your-channel-id \
   bun src/index.ts
