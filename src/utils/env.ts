@@ -8,7 +8,6 @@ import { z } from "zod";
  */
 export const env = parseEnv(process.env, {
     NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-    LOG_LEVEL: z.enum(["info", "debug", "warn", "error"]).default("info"),
 
     DISCORD_BOT_TOKEN: z.string().min(1),
     DISCORD_GUILD_ID: z.string().min(1),
