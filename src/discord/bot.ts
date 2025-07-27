@@ -11,6 +11,7 @@ import {
     type Message
 } from "discord.js";
 import { logger } from "../utils/logger";
+import type { FeedbackButton } from "../types/mcp";
 
 /**
  * Discord Bot の設定インターフェース
@@ -33,7 +34,7 @@ export class DiscordBot {
     private config: DiscordBotConfig;
     private isReady: boolean = false;
     private feedbackResolvers: Map<string, {
-        resolve: (value: { response: 'yes' | 'no'; userId: string }) => void;
+        resolve: (value: { response: string; userId: string }) => void;
         timeout?: NodeJS.Timeout;
     }> = new Map();
 
@@ -70,10 +71,10 @@ export class DiscordBot {
             if (!interaction.isButton()) return;
             
             const buttonInteraction = interaction as ButtonInteraction;
-            const [action, messageId = ''] = buttonInteraction.customId.split(':');
+            const [prefix, value, messageId = ''] = buttonInteraction.customId.split(':');
             
-            if (action === 'feedback_yes' || action === 'feedback_no') {
-                await this.handleFeedbackInteraction(buttonInteraction, action, messageId);
+            if (prefix === 'feedback') {
+                await this.handleFeedbackInteraction(buttonInteraction, value, messageId);
             }
         });
     }
@@ -96,9 +97,9 @@ export class DiscordBot {
     /**
      * 指定されたチャンネルにメッセージを送信
      * @param content 送信するメッセージ内容（文字列またはMessageCreateOptions）
-     * @returns Promise<void>
+     * @returns Promise<{messageId: string, channelId: string, sentAt: string}>
      */
-    async sendMessage(content: string | MessageCreateOptions): Promise<void> {
+    async sendMessage(content: string | MessageCreateOptions): Promise<{messageId: string, channelId: string, sentAt: string}> {
         if (!this.isReady) {
             throw new Error("Bot is not ready");
         }
@@ -114,13 +115,23 @@ export class DiscordBot {
         }
 
         try {
+            const sentAt = new Date().toISOString();
+            let message: Message;
+            
             // Type guard ensures channel is TextBasedChannel
             if ('send' in channel) {
-                await channel.send(content);
+                message = await channel.send(content);
             } else {
                 throw new Error("Channel does not support sending messages");
             }
+            
             logger.debug(`Message sent to channel ${this.config.textChannelId}`);
+            
+            return {
+                messageId: message.id,
+                channelId: this.config.textChannelId,
+                sentAt
+            };
         } catch (error) {
             logger.error("Failed to send message:", error);
             throw error;
@@ -158,28 +169,32 @@ export class DiscordBot {
      * フィードバック付きメッセージを送信
      * @param content MessageCreateOptions（embedを含む）
      * @param feedbackPrompt フィードバックプロンプト
+     * @param feedbackButtons カスタムフィードバックボタン
      * @param timeout タイムアウト時間（ミリ秒）
      * @returns フィードバック結果
      */
     async sendMessageWithFeedback(
         content: MessageCreateOptions,
         feedbackPrompt: string = "Please select:",
+        feedbackButtons: FeedbackButton[] = [
+            { label: "Yes", value: "yes" },
+            { label: "No", value: "no" }
+        ],
         timeout?: number
-    ): Promise<{ response: 'yes' | 'no' | 'timeout'; userId?: string; responseTime?: number }> {
+    ): Promise<{ response: string | 'timeout'; userId?: string; responseTime?: number; messageId?: string; channelId?: string; sentAt?: string }> {
         const startTime = Date.now();
+        const timestamp = Date.now();
         
-        const yesButton = new ButtonBuilder()
-            .setCustomId(`feedback_yes:${Date.now()}`)
-            .setLabel('Yes')
-            .setStyle(ButtonStyle.Success);
-
-        const noButton = new ButtonBuilder()
-            .setCustomId(`feedback_no:${Date.now()}`)
-            .setLabel('No')
-            .setStyle(ButtonStyle.Danger);
+        // ボタンを作成（最大5個まで）
+        const buttons = feedbackButtons.slice(0, 5).map(button => 
+            new ButtonBuilder()
+                .setCustomId(`feedback:${button.value}:${timestamp}`)
+                .setLabel(button.label)
+                .setStyle(ButtonStyle.Primary)
+        );
 
         const row = new ActionRowBuilder<ButtonBuilder>()
-            .addComponents(yesButton, noButton);
+            .addComponents(buttons);
 
         const messageOptions: MessageCreateOptions = {
             ...content,
@@ -189,18 +204,31 @@ export class DiscordBot {
 
         const message = await this.sendMessageAndGetMessage(messageOptions);
         const messageId = message.id;
+        const sentAt = new Date().toISOString();
 
         return new Promise((resolve) => {
             const timeoutHandle = timeout ? setTimeout(() => {
                 this.feedbackResolvers.delete(messageId);
-                resolve({ response: 'timeout', responseTime: Date.now() - startTime });
+                resolve({ 
+                    response: 'timeout', 
+                    responseTime: Date.now() - startTime,
+                    messageId,
+                    channelId: this.config.textChannelId,
+                    sentAt
+                });
             }, timeout) : undefined;
 
             this.feedbackResolvers.set(messageId, {
                 resolve: (value) => {
                     if (timeoutHandle) clearTimeout(timeoutHandle);
                     this.feedbackResolvers.delete(messageId);
-                    resolve({ ...value, responseTime: Date.now() - startTime });
+                    resolve({ 
+                        ...value, 
+                        responseTime: Date.now() - startTime,
+                        messageId,
+                        channelId: this.config.textChannelId,
+                        sentAt
+                    });
                 },
                 timeout: timeoutHandle
             });
@@ -244,27 +272,26 @@ export class DiscordBot {
      * フィードバックインタラクションを処理
      * @private
      * @param interaction ButtonInteraction
-     * @param action 'feedback_yes' または 'feedback_no'
+     * @param value ボタンの値
      * @param messageId メッセージID
      */
     private async handleFeedbackInteraction(
         interaction: ButtonInteraction,
-        action: string,
+        value: string,
         messageId: string
     ): Promise<void> {
         try {
             const resolver = this.feedbackResolvers.get(interaction.message.id);
             if (resolver) {
-                const response = action === 'feedback_yes' ? 'yes' : 'no';
-                resolver.resolve({ response, userId: interaction.user.id });
+                resolver.resolve({ response: value, userId: interaction.user.id });
                 
                 await interaction.reply({
-                    content: `Thank you for your feedback! You selected: ${response}`,
+                    content: `✅ You Selected: **${value}**`,
                     ephemeral: true
                 });
             } else {
                 await interaction.reply({
-                    content: 'This feedback session has expired.',
+                    content: '❌ This feedback session has expired.',
                     ephemeral: true
                 });
             }

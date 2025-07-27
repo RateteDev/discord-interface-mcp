@@ -10,7 +10,19 @@ describe("MCPServer", () => {
 
     beforeEach(() => {
         mockDiscordBot = {
-            sendMessage: mock(() => Promise.resolve()),
+            sendMessage: mock(() => Promise.resolve({
+                messageId: "test-message-123",
+                channelId: "test-channel-456",
+                sentAt: "2023-01-01T00:00:00.000Z"
+            })),
+            sendMessageWithFeedback: mock(() => Promise.resolve({
+                response: 'yes',
+                userId: 'test-user-123',
+                responseTime: 1500,
+                messageId: "test-message-123",
+                channelId: "test-channel-456",
+                sentAt: "2023-01-01T00:00:00.000Z"
+            })),
             getIsReady: mock(() => true),
             start: mock(() => Promise.resolve()),
             stop: mock(() => Promise.resolve())
@@ -64,11 +76,11 @@ describe("MCPServer", () => {
 
     describe("callTool", () => {
         describe("send_discord_embed", () => {
-            it("Discord にEmbedメッセージを送信する", async () => {
+            it("Discord にEmbedメッセージを送信する（色名使用）", async () => {
                 const embedData = {
                     title: "Test Embed",
                     description: "This is a test",
-                    color: 0x0099ff,
+                    color: "blue",
                     fields: [
                         { name: "Field 1", value: "Value 1", inline: true }
                     ]
@@ -80,21 +92,17 @@ describe("MCPServer", () => {
                     embeds: [{
                         title: "Test Embed",
                         description: "This is a test",
-                        color: 0x0099ff,
+                        color: 0x0000FF, // blue
                         fields: [
                             { name: "Field 1", value: "Value 1", inline: true }
                         ]
                     }]
                 });
 
-                expect(result).toEqual({
-                    content: [
-                        {
-                            type: "text",
-                            text: "Embed message sent to Discord successfully"
-                        }
-                    ]
-                });
+                const parsedResult = JSON.parse(result.content[0].text);
+                expect(parsedResult.status).toBe("success");
+                expect(parsedResult.messageId).toBe("test-message-123");
+                expect(parsedResult.channelId).toBe("test-channel-456");
             });
 
             it("空のEmbedでも送信できる", async () => {
@@ -104,30 +112,28 @@ describe("MCPServer", () => {
                     embeds: [{}]
                 });
 
-                expect(result).toEqual({
-                    content: [
-                        {
-                            type: "text",
-                            text: "Embed message sent to Discord successfully"
-                        }
-                    ]
-                });
+                const parsedResult = JSON.parse(result.content[0].text);
+                expect(parsedResult.status).toBe("success");
+            });
+
+            it("無効な色名を拒否する", async () => {
+                const embedData = {
+                    title: "Test",
+                    color: "orange" // 無効な色名
+                };
+
+                await expect(
+                    (mcpServer as any).callTool("send_discord_embed", embedData)
+                ).rejects.toThrow();
             });
         });
 
         describe("send_discord_embed_with_feedback", () => {
-            it("Discord にフィードバック付きEmbedメッセージを送信する", async () => {
-                // モック設定
-                mockDiscordBot.sendMessageWithFeedback = mock(() => Promise.resolve({
-                    response: 'yes' as const,
-                    userId: 'test-user-123',
-                    responseTime: 1500
-                }));
-
+            it("Discord にフィードバック付きEmbedメッセージを送信する（デフォルトボタン）", async () => {
                 const embedData = {
                     title: "Feedback Test",
                     description: "Please provide feedback",
-                    color: 0xff0000,
+                    color: "red",
                     feedbackPrompt: "Do you agree?"
                 };
 
@@ -138,49 +144,78 @@ describe("MCPServer", () => {
                         embeds: [{
                             title: "Feedback Test",
                             description: "Please provide feedback",
-                            color: 0xff0000
+                            color: 0xFF0000 // red
                         }]
                     },
                     "Do you agree?",
+                    [
+                        { label: "Yes", value: "yes" },
+                        { label: "No", value: "no" }
+                    ],
                     undefined
                 );
 
                 const parsedResult = JSON.parse(result.content[0].text);
-                expect(parsedResult.message).toBe("Embed message sent and feedback received");
-                expect(parsedResult.feedback).toEqual({
-                    response: 'yes',
-                    userId: 'test-user-123',
-                    responseTime: 1500
-                });
+                expect(parsedResult.status).toBe("success");
+                expect(parsedResult.feedback.response).toBe('yes');
+                expect(parsedResult.feedback.userId).toBe('test-user-123');
             });
 
-            it("タイムアウトを処理できる", async () => {
-                // 環境変数のモック
-                const originalTimeout = process.env.DISCORD_FEEDBACK_TIMEOUT;
-                process.env.DISCORD_FEEDBACK_TIMEOUT = "5000";
+            it("カスタムボタンでフィードバックを送信する", async () => {
+                const embedData = {
+                    title: "Rating Test",
+                    feedbackButtons: [
+                        { label: "Excellent", value: "excellent" },
+                        { label: "Good", value: "good" },
+                        { label: "Poor", value: "poor" }
+                    ]
+                };
 
-                // 新しい MCPServer インスタンスを作成して環境変数を反映
-                const newMcpServer = new MCPServer(mockDiscordBot);
-                (newMcpServer as any).server = mockServer;
+                const result = await (mcpServer as any).callTool("send_discord_embed_with_feedback", embedData);
 
-                mockDiscordBot.sendMessageWithFeedback = mock(() => Promise.resolve({
-                    response: 'timeout' as const,
-                    responseTime: 5000
-                }));
+                expect(mockDiscordBot.sendMessageWithFeedback).toHaveBeenCalledWith(
+                    {
+                        embeds: [{
+                            title: "Rating Test"
+                        }]
+                    },
+                    "Please select:",
+                    [
+                        { label: "Excellent", value: "excellent" },
+                        { label: "Good", value: "good" },
+                        { label: "Poor", value: "poor" }
+                    ],
+                    undefined
+                );
+            });
 
-                const result = await (newMcpServer as any).callTool("send_discord_embed_with_feedback", {
-                    title: "Timeout Test"
-                });
+            it("無効なボタン配列を拒否する", async () => {
+                const embedData = {
+                    title: "Invalid Buttons",
+                    feedbackButtons: [] // 空配列
+                };
 
-                const parsedResult = JSON.parse(result.content[0].text);
-                expect(parsedResult.feedback.response).toBe('timeout');
+                await expect(
+                    (mcpServer as any).callTool("send_discord_embed_with_feedback", embedData)
+                ).rejects.toThrow();
+            });
 
-                // 環境変数を元に戻す
-                if (originalTimeout !== undefined) {
-                    process.env.DISCORD_FEEDBACK_TIMEOUT = originalTimeout;
-                } else {
-                    delete process.env.DISCORD_FEEDBACK_TIMEOUT;
-                }
+            it("6つ以上のボタンを拒否する", async () => {
+                const embedData = {
+                    title: "Too Many Buttons",
+                    feedbackButtons: [
+                        { label: "1", value: "one" },
+                        { label: "2", value: "two" },
+                        { label: "3", value: "three" },
+                        { label: "4", value: "four" },
+                        { label: "5", value: "five" },
+                        { label: "6", value: "six" } // 6つ目
+                    ]
+                };
+
+                await expect(
+                    (mcpServer as any).callTool("send_discord_embed_with_feedback", embedData)
+                ).rejects.toThrow();
             });
         });
 
