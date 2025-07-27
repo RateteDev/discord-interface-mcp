@@ -1,114 +1,71 @@
-# Discord Interface MCP
+# Discord Interface MCP 🛰️
 
-Discordを介してModel Context Protocol (MCP)サーバーと対話できるようにするプロジェクト
+> Discord の親しみやすい UI を活用し、AIとのやりとりをもっとどこでも、手軽に。
 
-## 概要
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
+[![npm](https://img.shields.io/npm/v/discord-interface-mcp)](https://www.npmjs.com/package/discord-interface-mcp)
 
-Discord Interface MCPは、Discordをインターフェースとして活用することで、MCPサーバーの機能をより身近で使いやすくするプロジェクトです。慣れ親しんだDiscordのUIを通じて、複数人での利用、通知機能、読み上げ機能などを活用できます。
+## 目次
 
-### なぜDiscord？
+- [Discord Interface MCP 🛰️](#discord-interface-mcp-️)
+  - [目次](#目次)
+  - [主要機能](#主要機能)
+  - [インストール](#インストール)
+  - [必要な認証情報](#必要な認証情報)
+  - [MCP Tools](#mcp-tools)
+  - [プロジェクト構成](#プロジェクト構成)
+  - [技術スタック](#技術スタック)
+  - [ライセンス](#ライセンス)
 
-- **複数人利用**: チームやコミュニティでの共同利用が可能
-- **通知機能**: 重要な情報をリアルタイムで受け取れる
-- **読み上げ機能**: Discord の音声機能と連携可能
-- **リッチなUI**: Embedを使った視覚的に分かりやすい表示
-- **どこでも利用**: モバイルアプリからでもアクセス可能
-- **慣れ親しんだUI**: 多くの人が既に使い慣れているインターフェース
+## 主要機能
 
-## 開発ロードマップ
-
-### Phase 1: 一方向通信（実装中）
-- MCPサーバーからDiscordへのメッセージ送信
-- 基本的な通知機能の実装
-
-### Phase 2: 双方向対話
-- DiscordからMCPサーバーへのコマンド送信
-- インタラクティブな対話機能
-
-### Phase 3: 高機能UI
-- Discord Embedを使用したリッチな表示
-- ボタンやセレクトメニューなどのインタラクティブコンポーネント
+* **マルチユーザー対応** — チームやコミュニティで共同で利用可能
+* **通知** — Discord の通知機能で情報を即座に受け取れる
+* **リッチ UI** — Embed やボタンで直感的に閲覧・操作が可能
+* **クロスプラットフォーム** — モバイルアプリ・ブラウザ・PC からアクセス可能
 
 ## インストール
 
-詳細なインストール手順については[install-guide.md](./docs/install-guide.md)を参照してください。
+[docs/install-guide.md](./docs/install-guide.md) を参照。
 
-### クイックスタート
+## 必要な認証情報
 
-Claude Desktopの設定ファイル（`claude_desktop_config.json`）に以下を追加：
+| 環境変数                  | 説明                          |
+| ------------------------- | ----------------------------- |
+| `DISCORD_BOT_TOKEN`       | Discord Bot のトークン        |
+| `DISCORD_GUILD_ID`        | 使用するサーバー (Guild) ID   |
+| `DISCORD_TEXT_CHANNEL_ID` | メッセージ送信用チャンネル ID |
 
-```json
-{
-  "mcpServers": {
-    "discord-interface": {
-      "command": "npx",
-      "args": ["discord-interface-mcp"],
-      "env": {
-        "DISCORD_BOT_TOKEN": "your-bot-token",
-        "DISCORD_GUILD_ID": "your-guild-id",
-        "DISCORD_TEXT_CHANNEL_ID": "your-channel-id"
-      }
-    }
-  }
-}
-```
+## MCP Tools
 
-## 必要な設定
+| コマンド                           | 説明                            |
+| ---------------------------------- | ------------------------------- |
+| `send_discord_embed`               | Embed メッセージを送信          |
+| `send_discord_embed_with_feedback` | フィードバック付き Embed を送信 |
 
-以下の情報が必要です：
+詳細は [docs/mcp-server-reference.md](./docs/mcp-server-reference.md) を参照。
 
-- `DISCORD_BOT_TOKEN`: Discord Botのトークン
-- `DISCORD_GUILD_ID`: 使用するサーバーのID
-- `DISCORD_TEXT_CHANNEL_ID`: メッセージを送信するチャンネルのID
+## プロジェクト構成
 
-
-## 使用方法
-
-### 利用可能なツール
-
-- `send_discord_embed`: Embedメッセージを送信
-- `send_discord_embed_with_feedback`: フィードバック機能付きEmbedを送信
-
-詳細なMCPサーバーリファレンスは[mcp-server-reference.md](./docs/mcp-server-reference.md)を参照してください。
-
-### 開発者向け
-
-```bash
-# 開発モードで起動
-bun run dev
-
-# ビルド
-bun run build
-
-# プロダクション実行
-bun run start
-
-# テスト実行
-bun test
-```
-
-## プロジェクト構造
-
-```
+```text
 discord-interface-mcp/
-├── src/
-│   ├── discord/    # Discord bot関連のコード
-│   ├── mcp/        # MCP server実装
-│   ├── types/      # TypeScript型定義
-│   └── utils/      # ユーティリティ関数
-├── .env.example    # 環境変数のテンプレート
-├── package.json    # プロジェクト設定
-└── tsconfig.json   # TypeScript設定
+├─ src/
+│  ├─ discord/    # Discord bot
+│  ├─ mcp/        # MCP server
+│  ├─ types/      # TypeScript 型定義
+│  └─ utils/      # 共通ユーティリティ
+├─ .env.example    # 環境変数テンプレート
+├─ package.json    # プロジェクト設定
+└─ tsconfig.json   # TypeScript 設定
 ```
 
 ## 技術スタック
 
-- **[Bun](https://bun.sh/)**: 高速なJavaScriptランタイム
-- **[discord.js](https://discord.js.org/)**: Discord bot開発用ライブラリ
-- **[@modelcontextprotocol/sdk](https://www.npmjs.com/package/@modelcontextprotocol/sdk)**: MCP実装用SDK
-- **TypeScript**: 型安全な開発
+* **TypeScript**
+* **[Bun](https://bun.sh/)**
+* **[discord.js](https://discord.js.org/)**
+* **[@modelcontextprotocol/sdk](https://www.npmjs.com/package/@modelcontextprotocol/sdk)**
 
 ## ライセンス
 
-GPLv3
-
+GPL-3.0 © 2025 Discord Interface MCP Contributors
