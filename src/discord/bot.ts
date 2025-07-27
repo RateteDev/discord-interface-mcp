@@ -10,7 +10,6 @@ import {
     type ButtonInteraction,
     type Message
 } from "discord.js";
-import { logger } from "../utils/logger";
 import type { FeedbackButton } from "../types/mcp";
 
 /**
@@ -59,12 +58,12 @@ export class DiscordBot {
      */
     private setupEventHandlers(): void {
         this.client.once(Events.ClientReady, (client) => {
-            logger.info(`Discord Bot logged in as ${client.user.tag}`);
+            console.error(`[INFO] Discord Bot logged in as ${client.user.tag}`);
             this.isReady = true;
         });
 
         this.client.on(Events.Error, (error) => {
-            logger.error("Discord client error:", error);
+            console.error("[ERROR] Discord client error:", error);
         });
 
         this.client.on(Events.InteractionCreate, async (interaction) => {
@@ -85,11 +84,11 @@ export class DiscordBot {
      */
     async start(): Promise<void> {
         try {
-            logger.info("Starting Discord bot...");
+            console.error("[INFO] Starting Discord bot...");
             this.setupEventHandlers();
             await this.client.login(this.config.token);
         } catch (error) {
-            logger.error("Failed to start Discord bot:", error);
+            console.error("[ERROR] Failed to start Discord bot:", error);
             throw error;
         }
     }
@@ -125,7 +124,7 @@ export class DiscordBot {
                 throw new Error("Channel does not support sending messages");
             }
             
-            logger.debug(`Message sent to channel ${this.config.textChannelId}`);
+            console.error(`[DEBUG] Message sent to channel ${this.config.textChannelId}`);
             
             return {
                 messageId: message.id,
@@ -133,7 +132,7 @@ export class DiscordBot {
                 sentAt
             };
         } catch (error) {
-            logger.error("Failed to send message:", error);
+            console.error("[ERROR] Failed to send message:", error);
             throw error;
         }
     }
@@ -143,7 +142,7 @@ export class DiscordBot {
      * @returns Promise<void>
      */
     async stop(): Promise<void> {
-        logger.info("Stopping Discord bot...");
+        console.error("[INFO] Stopping Discord bot...");
         await this.client.destroy();
         this.isReady = false;
     }
@@ -263,7 +262,7 @@ export class DiscordBot {
                 throw new Error("Channel does not support sending messages");
             }
         } catch (error) {
-            logger.error("Failed to send message:", error);
+            console.error("[ERROR] Failed to send message:", error);
             throw error;
         }
     }
@@ -296,7 +295,7 @@ export class DiscordBot {
                 });
             }
         } catch (error) {
-            logger.error("Error handling feedback interaction:", error);
+            console.error("[ERROR] Error handling feedback interaction:", error);
             await interaction.reply({
                 content: 'An error occurred while processing your feedback.',
                 ephemeral: true

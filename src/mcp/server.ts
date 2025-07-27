@@ -6,7 +6,6 @@ import {
     type Tool,
     type CallToolResult
 } from "@modelcontextprotocol/sdk/types.js";
-import { logger } from "../utils/logger";
 import { env } from "../utils/env";
 import type { DiscordBot } from "../discord/bot";
 import type { 
@@ -62,7 +61,7 @@ export class MCPServer {
         });
 
         this.server.onerror = (error) => {
-            logger.error("MCP Server error:", error);
+            console.error("[ERROR] MCP Server error:", error);
         };
     }
 
@@ -226,7 +225,7 @@ export class MCPServer {
                 embeds: [embed]
             });
             
-            logger.info("Sent embed message to Discord");
+            console.error("[INFO] Sent embed message to Discord");
             
             const response: DiscordMessageResponse = {
                 sentAt: messageInfo.sentAt,
@@ -284,7 +283,7 @@ export class MCPServer {
                 timeoutMs
             );
             
-            logger.info(`Sent embed with feedback to Discord. Response: ${feedbackResult.response}`);
+            console.error(`[INFO] Sent embed with feedback to Discord. Response: ${feedbackResult.response}`);
             
             const response: DiscordFeedbackResponse = {
                 sentAt: feedbackResult.sentAt!,
@@ -317,10 +316,10 @@ export class MCPServer {
      * @returns Promise<void>
      */
     async start(): Promise<void> {
-        logger.info("Starting MCP server...");
+        console.error("[INFO] Starting MCP server...");
         const transport = new StdioServerTransport();
         await this.server.connect(transport);
-        logger.info("MCP server started");
+        console.error("[INFO] MCP server started");
     }
 
     /**
@@ -328,8 +327,8 @@ export class MCPServer {
      * @returns Promise<void>
      */
     async stop(): Promise<void> {
-        logger.info("Stopping MCP server...");
+        console.error("[INFO] Stopping MCP server...");
         await this.server.close();
-        logger.info("MCP server stopped");
+        console.error("[INFO] MCP server stopped");
     }
 }

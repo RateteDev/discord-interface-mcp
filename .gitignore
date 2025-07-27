@@ -46,6 +46,7 @@ logs/
 
 # Claude workspace
 .claude-workspace/
+.claude/
 
 # Temporary files
 *.tmp

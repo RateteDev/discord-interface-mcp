@@ -1,5 +1,4 @@
 import { env, maskEnv } from "./utils/env";
-import { logger } from "./utils/logger";
 import { DiscordBot } from "./discord/bot";
 import { MCPServer } from "./mcp/server";
 
@@ -8,10 +7,10 @@ import { MCPServer } from "./mcp/server";
  */
 async function main() {
     try {
-        logger.info("Discord Interface MCP starting...");
-        logger.info(`Discord Bot Token: ${maskEnv(env.DISCORD_BOT_TOKEN)}`);
-        logger.info(`Discord Guild ID: ${env.DISCORD_GUILD_ID}`);
-        logger.info(`Discord Text Channel ID: ${env.DISCORD_TEXT_CHANNEL_ID}`);
+        console.error("[INFO] Discord Interface MCP starting...");
+        console.error(`[INFO] Discord Bot Token: ${maskEnv(env.DISCORD_BOT_TOKEN)}`);
+        console.error(`[INFO] Discord Guild ID: ${env.DISCORD_GUILD_ID}`);
+        console.error(`[INFO] Discord Text Channel ID: ${env.DISCORD_TEXT_CHANNEL_ID}`);
 
         // Discord Bot の初期化
         const discordBot = new DiscordBot({
@@ -35,9 +34,9 @@ async function main() {
         // グレースフルシャットダウンの設定
         setupGracefulShutdown(discordBot, mcpServer);
 
-        logger.info("Discord Interface MCP is running successfully!");
+        console.error("[INFO] Discord Interface MCP is running successfully!");
     } catch (error) {
-        logger.error("Failed to start application:", error);
+        console.error("[ERROR] Failed to start application:", error);
         process.exit(1);
     }
 }
@@ -59,7 +58,7 @@ async function waitForBotReady(bot: DiscordBot, maxRetries = 30, retryDelay = 10
         throw new Error("Discord bot failed to become ready");
     }
     
-    logger.info("Discord bot is ready!");
+    console.error("[INFO] Discord bot is ready!");
 }
 
 /**
@@ -69,15 +68,15 @@ async function waitForBotReady(bot: DiscordBot, maxRetries = 30, retryDelay = 10
  */
 function setupGracefulShutdown(discordBot: DiscordBot, mcpServer: MCPServer): void {
     const shutdown = async () => {
-        logger.info("Shutting down gracefully...");
+        console.error("[INFO] Shutting down gracefully...");
         
         try {
             await mcpServer.stop();
             await discordBot.stop();
-            logger.info("Shutdown complete");
+            console.error("[INFO] Shutdown complete");
             process.exit(0);
         } catch (error) {
-            logger.error("Error during shutdown:", error);
+            console.error("[ERROR] Error during shutdown:", error);
             process.exit(1);
         }
     };
@@ -88,6 +87,6 @@ function setupGracefulShutdown(discordBot: DiscordBot, mcpServer: MCPServer): vo
 
 // アプリケーションを開始
 main().catch(error => {
-    logger.error("Unhandled error:", error);
+    console.error("[ERROR] Unhandled error:", error);
     process.exit(1);
 });
