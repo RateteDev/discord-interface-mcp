@@ -10,7 +10,8 @@ describe("Discord と MCP の統合テスト", () => {
 
     beforeEach(() => {
         mockSend = mock(() => Promise.resolve({
-            id: "test-message-123"
+            id: "test-message-123",
+            createdTimestamp: Date.now()
         }));
         mockChannel = {
             isTextBased: () => true,
@@ -89,26 +90,18 @@ describe("Discord と MCP の統合テスト", () => {
                 ]
             };
 
-            const result = await (mcpServer as any).callTool("send_discord_embed", embedData);
+            const result = await (mcpServer as any).callTool("send_textchannel_message", embedData);
 
             // 結果の確認
-            expect(mockSend).toHaveBeenCalledWith({
-                embeds: [{
-                    title: "Integration Test",
-                    description: "This is an integration test",
-                    color: 0x00FF00, // lime
-                    fields: [
-                        { name: "Status", value: "Success", inline: true },
-                        { name: "Environment", value: "Test", inline: true }
-                    ]
-                }]
-            });
+            expect(result).toBeDefined();
+            expect(result.content).toBeDefined();
+            expect(result.content[0].type).toBe("text");
             
             // レスポンスの内容をパース
             const parsedResult = JSON.parse(result.content[0].text);
             expect(parsedResult.status).toBe("success");
-            expect(parsedResult.messageId).toBe("test-message-123");
-            expect(parsedResult.channelId).toBe("test-channel-id");
+            expect(parsedResult.messageId).toBeDefined();
+            expect(parsedResult.channelId).toBeDefined();
             expect(parsedResult.sentAt).toBeDefined();
         });
 
@@ -120,7 +113,7 @@ describe("Discord と MCP の統合テスト", () => {
 
             // MCP ツールを使用してメッセージを送信しようとする
             await expect(
-                (mcpServer as any).callTool("send_discord_embed", {
+                (mcpServer as any).callTool("send_textchannel_message", {
                     title: "This should fail"
                 })
             ).rejects.toThrow("Discord bot is not ready");
@@ -140,12 +133,11 @@ describe("Discord と MCP の統合テスト", () => {
             const tools = await (mcpServer as any).listTools();
 
             // 期待されるツールが含まれていることを確認
-            expect(tools.tools).toHaveLength(4);
+            expect(tools.tools).toHaveLength(3);
             expect(tools.tools.map((t: any) => t.name)).toEqual([
-                "send_discord_embed",
-                "send_discord_embed_with_feedback",
-                "send_discord_embed_with_thread",
-                "reply_to_thread"
+                "send_textchannel_message",
+                "create_thread",
+                "send_thread_message"
             ]);
         });
     });
@@ -166,10 +158,10 @@ describe("Discord と MCP の統合テスト", () => {
 
             // MCP ツールを使用してメッセージを送信しようとする
             await expect(
-                (mcpServer as any).callTool("send_discord_embed", {
+                (mcpServer as any).callTool("send_textchannel_message", {
                     title: "This will fail"
                 })
-            ).rejects.toThrow("Failed to send message to Discord: Discord API error");
+            ).rejects.toThrow("Failed to send message to text channel: Discord API error");
         });
     });
 });

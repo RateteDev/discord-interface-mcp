@@ -8,19 +8,18 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { env } from "../utils/env";
 import type { DiscordBot } from "../discord/bot";
-import type { 
-    DiscordMessageResponse, 
-    DiscordFeedbackResponse,
-    DiscordThreadResponse,
-    DiscordThreadReplyResponse 
-} from "../types/mcp";
-import { 
-    SendDiscordEmbedArgsSchema,
-    SendDiscordEmbedWithFeedbackArgsSchema,
-    SendDiscordEmbedWithThreadArgsSchema,
-    ReplyToThreadArgsSchema,
-    ColorNameSchema
-} from "../validation/schemas";
+import {
+    SendTextChannelMessageArgsSchema,
+    CreateThreadArgsSchema,
+    SendThreadMessageArgsSchema
+} from "../validation/schemas-v2";
+import type {
+    TextChannelMessageResponse,
+    CreateThreadResponse,
+    SendThreadMessageResponse,
+    ThreadMessageTextResponse,
+    ThreadMessageButtonResponse
+} from "../types/mcp-v2";
 
 /**
  * MCP サーバークラス
@@ -78,8 +77,8 @@ export class MCPServer {
         return {
             tools: [
                 {
-                    name: "send_discord_embed",
-                    description: "Send a rich embed message to Discord channel",
+                    name: "send_textchannel_message",
+                    description: "Send a message to text channel without waiting for response",
                     inputSchema: {
                         type: "object",
                         properties: {
@@ -114,115 +113,60 @@ export class MCPServer {
                     }
                 },
                 {
-                    name: "send_discord_embed_with_feedback",
-                    description: "Send an embed message with customizable feedback buttons and wait for user response",
+                    name: "create_thread",
+                    description: "Create a new thread with an initial message",
                     inputSchema: {
                         type: "object",
                         properties: {
-                            title: {
-                                type: "string",
-                                description: "The title of the embed"
-                            },
-                            description: {
-                                type: "string",
-                                description: "The description of the embed"
-                            },
-                            color: {
-                                type: "string",
-                                description: "The color of the embed (CSS basic 16 color names)",
-                                enum: ["black", "silver", "gray", "white", "maroon", "red", "purple", "fuchsia", "green", "lime", "olive", "yellow", "navy", "blue", "teal", "aqua"]
-                            },
-                            fields: {
-                                type: "array",
-                                items: {
-                                    type: "object",
-                                    properties: {
-                                        name: { type: "string" },
-                                        value: { type: "string" },
-                                        inline: { type: "boolean" }
-                                    },
-                                    required: ["name", "value"]
-                                },
-                                description: "Array of embed fields"
-                            },
-                            feedbackPrompt: {
-                                type: "string",
-                                description: "The prompt text above the buttons",
-                                default: "Please select:"
-                            },
-                            feedbackButtons: {
-                                type: "array",
-                                items: {
-                                    type: "object",
-                                    properties: {
-                                        label: { 
-                                            type: "string",
-                                            description: "Button display text (1-80 characters)"
-                                        },
-                                        value: { 
-                                            type: "string",
-                                            description: "Button response value (1-100 characters, supports unicode including Japanese, Chinese, etc.)"
-                                        }
-                                    },
-                                    required: ["label", "value"]
-                                },
-                                description: "Custom feedback buttons (1-5 buttons, defaults to Yes/No)",
-                                maxItems: 5,
-                                minItems: 1
-                            }
-                        },
-                        required: []
-                    }
-                },
-                {
-                    name: "send_discord_embed_with_thread",
-                    description: "Send an embed message and create a new thread",
-                    inputSchema: {
-                        type: "object",
-                        properties: {
-                            title: {
-                                type: "string",
-                                description: "The title of the embed"
-                            },
-                            description: {
-                                type: "string",
-                                description: "The description of the embed"
-                            },
-                            color: {
-                                type: "string",
-                                description: "The color of the embed (CSS basic 16 color names)",
-                                enum: ["black", "silver", "gray", "white", "maroon", "red", "purple", "fuchsia", "green", "lime", "olive", "yellow", "navy", "blue", "teal", "aqua"]
-                            },
-                            fields: {
-                                type: "array",
-                                items: {
-                                    type: "object",
-                                    properties: {
-                                        name: { type: "string" },
-                                        value: { type: "string" },
-                                        inline: { type: "boolean" }
-                                    },
-                                    required: ["name", "value"]
-                                },
-                                description: "Array of embed fields"
-                            },
                             threadName: {
                                 type: "string",
                                 description: "Name of the thread to create (1-100 characters)"
+                            },
+                            initialMessage: {
+                                type: "object",
+                                properties: {
+                                    title: {
+                                        type: "string",
+                                        description: "The title of the initial message embed"
+                                    },
+                                    description: {
+                                        type: "string",
+                                        description: "The description of the initial message embed"
+                                    },
+                                    color: {
+                                        type: "string",
+                                        description: "The color of the embed (CSS basic 16 color names)",
+                                        enum: ["black", "silver", "gray", "white", "maroon", "red", "purple", "fuchsia", "green", "lime", "olive", "yellow", "navy", "blue", "teal", "aqua"]
+                                    },
+                                    fields: {
+                                        type: "array",
+                                        items: {
+                                            type: "object",
+                                            properties: {
+                                                name: { type: "string" },
+                                                value: { type: "string" },
+                                                inline: { type: "boolean" }
+                                            },
+                                            required: ["name", "value"]
+                                        },
+                                        description: "Array of embed fields"
+                                    }
+                                },
+                                description: "Initial message to send when creating the thread"
                             }
                         },
-                        required: ["threadName"]
+                        required: ["threadName", "initialMessage"]
                     }
                 },
                 {
-                    name: "reply_to_thread",
-                    description: "Reply to an existing Discord thread with an embed message and optionally wait for user response",
+                    name: "send_thread_message",
+                    description: "Send a message to a thread with optional wait for text or button response",
                     inputSchema: {
                         type: "object",
                         properties: {
                             threadId: {
                                 type: "string",
-                                description: "The ID of the thread to reply to"
+                                description: "The ID of the thread to send message to"
                             },
                             title: {
                                 type: "string",
@@ -250,9 +194,34 @@ export class MCPServer {
                                 },
                                 description: "Array of embed fields"
                             },
-                            waitForReply: {
-                                type: "boolean",
-                                description: "Whether to wait for user reply (default: true)"
+                            waitForResponse: {
+                                type: "object",
+                                properties: {
+                                    type: {
+                                        type: "string",
+                                        enum: ["text", "button"],
+                                        description: "Type of response to wait for"
+                                    },
+                                    buttons: {
+                                        type: "array",
+                                        items: {
+                                            type: "object",
+                                            properties: {
+                                                label: {
+                                                    type: "string",
+                                                    description: "Button display text (1-80 characters)"
+                                                },
+                                                value: {
+                                                    type: "string",
+                                                    description: "Button response value (1-100 characters)"
+                                                }
+                                            },
+                                            required: ["label", "value"]
+                                        },
+                                        description: "Buttons to show when type is 'button' (1-5 buttons)"
+                                    }
+                                },
+                                description: "Configuration for waiting for user response"
                             }
                         },
                         required: ["threadId"]
@@ -275,33 +244,31 @@ export class MCPServer {
         }
 
         switch (name) {
-            case "send_discord_embed":
-                return this.sendDiscordEmbed(args);
+            case "send_textchannel_message":
+                return this.sendTextChannelMessage(args);
             
-            case "send_discord_embed_with_feedback":
-                return this.sendDiscordEmbedWithFeedback(args);
+            case "create_thread":
+                return this.createThread(args);
             
-            case "send_discord_embed_with_thread":
-                return this.sendDiscordEmbedWithThread(args);
-            
-            case "reply_to_thread":
-                return this.replyToThread(args);
+            case "send_thread_message":
+                return this.sendThreadMessage(args);
             
             default:
                 throw new Error(`Unknown tool: ${name}`);
         }
     }
 
+
     /**
-     * Discord に Embed メッセージを送信
+     * テキストチャンネルにメッセージを送信（新API）
      * @private
-     * @param args Embed 送信引数
+     * @param args メッセージ送信引数
      * @returns 送信結果
      */
-    private async sendDiscordEmbed(args: unknown): Promise<CallToolResult> {
+    private async sendTextChannelMessage(args: unknown): Promise<CallToolResult> {
         try {
             // Zodバリデーション
-            const validatedArgs = SendDiscordEmbedArgsSchema.parse(args);
+            const validatedArgs = SendTextChannelMessageArgsSchema.parse(args);
             
             const embed: {
                 title?: string;
@@ -315,17 +282,17 @@ export class MCPServer {
             if (validatedArgs.color !== undefined) embed.color = validatedArgs.color;
             if (validatedArgs.fields) embed.fields = validatedArgs.fields;
 
-            const messageInfo = await this.discordBot.sendMessage({
+            const result = await this.discordBot.sendTextChannelMessage({
                 embeds: [embed]
             });
             
-            console.error("[INFO] Sent embed message to Discord");
+            console.error("[INFO] Sent message to text channel");
             
-            const response: DiscordMessageResponse = {
-                sentAt: messageInfo.sentAt,
-                messageId: messageInfo.messageId,
-                channelId: messageInfo.channelId,
-                status: "success"
+            const response: TextChannelMessageResponse = {
+                sentAt: result.sentAt,
+                messageId: result.messageId,
+                channelId: result.channelId,
+                status: result.status
             };
             
             return {
@@ -338,20 +305,20 @@ export class MCPServer {
             };
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : String(error);
-            throw new Error(`Failed to send message to Discord: ${errorMessage}`);
+            throw new Error(`Failed to send message to text channel: ${errorMessage}`);
         }
     }
 
     /**
-     * Discord にフィードバック付き Embed メッセージを送信
+     * スレッドを作成（新API）
      * @private
-     * @param args フィードバック付き Embed 送信引数
-     * @returns 送信結果とフィードバック
+     * @param args スレッド作成引数
+     * @returns 作成結果
      */
-    private async sendDiscordEmbedWithFeedback(args: unknown): Promise<CallToolResult> {
+    private async createThread(args: unknown): Promise<CallToolResult> {
         try {
             // Zodバリデーション
-            const validatedArgs = SendDiscordEmbedWithFeedbackArgsSchema.parse(args);
+            const validatedArgs = CreateThreadArgsSchema.parse(args);
             
             const embed: {
                 title?: string;
@@ -360,35 +327,24 @@ export class MCPServer {
                 fields?: Array<{ name: string; value: string; inline?: boolean }>;
             } = {};
             
-            if (validatedArgs.title) embed.title = validatedArgs.title;
-            if (validatedArgs.description) embed.description = validatedArgs.description;
-            if (validatedArgs.color !== undefined) embed.color = validatedArgs.color;
-            if (validatedArgs.fields) embed.fields = validatedArgs.fields;
+            if (validatedArgs.initialMessage.title) embed.title = validatedArgs.initialMessage.title;
+            if (validatedArgs.initialMessage.description) embed.description = validatedArgs.initialMessage.description;
+            if (validatedArgs.initialMessage.color !== undefined) embed.color = validatedArgs.initialMessage.color;
+            if (validatedArgs.initialMessage.fields) embed.fields = validatedArgs.initialMessage.fields;
 
-            const feedbackPrompt = validatedArgs.feedbackPrompt || "Please select:";
-            const feedbackButtons = validatedArgs.feedbackButtons;
-            const timeoutSeconds = env.DISCORD_FEEDBACK_TIMEOUT_SECONDS;
-            const timeoutMs = timeoutSeconds ? timeoutSeconds * 1000 : undefined;
-
-            const feedbackResult = await this.discordBot.sendMessageWithFeedback(
-                { embeds: [embed] },
-                feedbackPrompt,
-                feedbackButtons,
-                timeoutMs
+            const result = await this.discordBot.createThread(
+                validatedArgs.threadName,
+                { embeds: [embed] }
             );
             
-            console.error(`[INFO] Sent embed with feedback to Discord. Response: ${feedbackResult.response}`);
+            console.error(`[INFO] Created thread: ${result.threadId}`);
             
-            const response: DiscordFeedbackResponse = {
-                sentAt: feedbackResult.sentAt!,
-                messageId: feedbackResult.messageId!,
-                channelId: feedbackResult.channelId!,
-                status: "success",
-                feedback: {
-                    response: feedbackResult.response,
-                    userId: feedbackResult.userId,
-                    responseTime: feedbackResult.responseTime
-                }
+            const response: CreateThreadResponse = {
+                sentAt: result.sentAt,
+                messageId: result.messageId,
+                channelId: result.channelId,
+                threadId: result.threadId,
+                status: result.status
             };
             
             return {
@@ -401,72 +357,20 @@ export class MCPServer {
             };
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : String(error);
-            throw new Error(`Failed to send message to Discord: ${errorMessage}`);
+            throw new Error(`Failed to create thread: ${errorMessage}`);
         }
     }
 
     /**
-     * Discord に Embed メッセージを送信してスレッドを開始
+     * スレッドにメッセージを送信（新API）
      * @private
-     * @param args Embed 送信引数とスレッド名
-     * @returns 送信結果とスレッド情報
+     * @param args メッセージ送信引数
+     * @returns 送信結果
      */
-    private async sendDiscordEmbedWithThread(args: unknown): Promise<CallToolResult> {
+    private async sendThreadMessage(args: unknown): Promise<CallToolResult> {
         try {
             // Zodバリデーション
-            const validatedArgs = SendDiscordEmbedWithThreadArgsSchema.parse(args);
-            
-            const embed: {
-                title?: string;
-                description?: string;
-                color?: number;
-                fields?: Array<{ name: string; value: string; inline?: boolean }>;
-            } = {};
-            
-            if (validatedArgs.title) embed.title = validatedArgs.title;
-            if (validatedArgs.description) embed.description = validatedArgs.description;
-            if (validatedArgs.color !== undefined) embed.color = validatedArgs.color;
-            if (validatedArgs.fields) embed.fields = validatedArgs.fields;
-
-            const threadResult = await this.discordBot.sendMessageWithThread(
-                { embeds: [embed] },
-                validatedArgs.threadName
-            );
-            
-            console.error(`[INFO] Sent embed with thread to Discord. Thread ID: ${threadResult.threadId}`);
-            
-            const response: DiscordThreadResponse = {
-                sentAt: threadResult.sentAt,
-                messageId: threadResult.messageId,
-                channelId: threadResult.channelId,
-                status: "success",
-                threadId: threadResult.threadId
-            };
-            
-            return {
-                content: [
-                    {
-                        type: "text",
-                        text: JSON.stringify(response, null, 2)
-                    }
-                ]
-            };
-        } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : String(error);
-            throw new Error(`Failed to send message with thread to Discord: ${errorMessage}`);
-        }
-    }
-
-    /**
-     * Discord スレッドに返信
-     * @private
-     * @param args スレッドID と Embed 送信引数
-     * @returns 送信結果とオプションでユーザーの応答
-     */
-    private async replyToThread(args: unknown): Promise<CallToolResult> {
-        try {
-            // Zodバリデーション
-            const validatedArgs = ReplyToThreadArgsSchema.parse(args);
+            const validatedArgs = SendThreadMessageArgsSchema.parse(args);
             
             const embed: {
                 title?: string;
@@ -480,11 +384,16 @@ export class MCPServer {
             if (validatedArgs.title) embed.title = validatedArgs.title;
             if (validatedArgs.description) embed.description = validatedArgs.description;
             
-            // 返信待ちの場合の装飾
-            if (validatedArgs.waitForReply) {
+            // 応答待ちの場合の装飾
+            if (validatedArgs.waitForResponse) {
                 // 色が指定されていない場合は青色をデフォルトに
                 embed.color = validatedArgs.color !== undefined ? validatedArgs.color : 0x0099FF;
-                embed.footer = { text: "💬 返信をお待ちしています..." };
+                
+                if (validatedArgs.waitForResponse.type === "text") {
+                    embed.footer = { text: "💬 返信をお待ちしています..." };
+                } else if (validatedArgs.waitForResponse.type === "button") {
+                    embed.footer = { text: "👆 選択してください" };
+                }
                 embed.timestamp = new Date().toISOString();
             } else {
                 // 返信不要の場合は通常の色
@@ -496,22 +405,43 @@ export class MCPServer {
             const timeoutSeconds = env.DISCORD_FEEDBACK_TIMEOUT_SECONDS;
             const timeoutMs = timeoutSeconds ? timeoutSeconds * 1000 : undefined;
 
-            const result = await this.discordBot.replyToThread(
+            const result = await this.discordBot.sendThreadMessage(
                 validatedArgs.threadId,
                 { embeds: [embed] },
-                validatedArgs.waitForReply,
+                validatedArgs.waitForResponse,
                 timeoutMs
             );
             
-            console.error(`[INFO] Sent reply to thread ${validatedArgs.threadId}. Wait for reply: ${validatedArgs.waitForReply}`);
+            console.error(`[INFO] Sent message to thread ${validatedArgs.threadId}. Wait for response: ${validatedArgs.waitForResponse?.type || 'none'}`);
             
-            const response: DiscordThreadReplyResponse = {
-                sentAt: result.sentAt,
-                messageId: result.messageId,
-                threadId: result.threadId,
-                status: "success",
-                userReply: result.userReply
-            };
+            let response: SendThreadMessageResponse;
+            
+            if (!validatedArgs.waitForResponse) {
+                response = {
+                    sentAt: result.sentAt,
+                    messageId: result.messageId,
+                    threadId: validatedArgs.threadId,
+                    status: result.status
+                };
+            } else if (result.response && result.response.type === "text") {
+                response = {
+                    sentAt: result.sentAt,
+                    messageId: result.messageId,
+                    threadId: validatedArgs.threadId,
+                    status: result.status,
+                    response: result.response
+                } as ThreadMessageTextResponse;
+            } else if (result.response && result.response.type === "button") {
+                response = {
+                    sentAt: result.sentAt,
+                    messageId: result.messageId,
+                    threadId: validatedArgs.threadId,
+                    status: result.status,
+                    response: result.response
+                } as ThreadMessageButtonResponse;
+            } else {
+                throw new Error("Unexpected response format");
+            }
             
             return {
                 content: [
@@ -523,7 +453,7 @@ export class MCPServer {
             };
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : String(error);
-            throw new Error(`Failed to reply to thread: ${errorMessage}`);
+            throw new Error(`Failed to send message to thread: ${errorMessage}`);
         }
     }
 

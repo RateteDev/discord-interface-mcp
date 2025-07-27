@@ -69,51 +69,6 @@ describe("DiscordBot", () => {
         });
     });
 
-    describe("sendMessage", () => {
-        beforeEach(() => {
-            (bot as any)._setReady(true);
-        });
-
-        it("指定されたチャンネルにメッセージを送信する", async () => {
-            await bot.sendMessage("Hello, Discord!");
-            
-            expect(mockClient.channels.cache.get).toHaveBeenCalledWith("test-channel-id");
-            expect(mockSend).toHaveBeenCalledWith("Hello, Discord!");
-        });
-
-        it("Embedオプションでリッチなメッセージを送信できる", async () => {
-            const options: MessageCreateOptions = {
-                embeds: [{
-                    title: "Test Embed",
-                    description: "This is a test",
-                    color: 0x0099ff
-                }]
-            };
-            
-            await bot.sendMessage(options);
-            expect(mockSend).toHaveBeenCalledWith(options);
-        });
-
-        it("チャンネルが見つからない場合はエラーをスローする", async () => {
-            mockClient.channels.cache.get = mock(() => null) as any;
-            
-            await expect(bot.sendMessage("test")).rejects.toThrow("Channel not found");
-        });
-
-        it("テキストチャンネルでない場合はエラーをスローする", async () => {
-            mockClient.channels.cache.get = mock(() => ({
-                isTextBased: () => false
-            })) as any;
-            
-            await expect(bot.sendMessage("test")).rejects.toThrow("Channel is not a text channel");
-        });
-
-        it("Botが準備できていない場合はエラーをスローする", async () => {
-            (bot as any)._setReady(false);
-            
-            await expect(bot.sendMessage("test")).rejects.toThrow("Bot is not ready");
-        });
-    });
 
     describe("stop", () => {
         it("Discord クライアントを正しく破棄する", async () => {

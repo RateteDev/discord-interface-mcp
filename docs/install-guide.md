@@ -140,8 +140,9 @@ claude mcp remove discord-interface
 1. Claude DesktopまたはClaude Codeを起動
 2. MCPツールが利用可能か確認
 3. 以下のツールが表示されることを確認：
-   - `send_discord_embed`
-   - `send_discord_embed_with_feedback`
+   - `send_textchannel_message`
+   - `create_thread`
+   - `send_thread_message`
 
 ## トラブルシューティング
 

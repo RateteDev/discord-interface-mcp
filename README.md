@@ -39,12 +39,11 @@
 
 ## MCP Tools
 
-| コマンド                           | 説明                                       |
-| ---------------------------------- | ------------------------------------------ |
-| `send_discord_embed`               | Embed メッセージを送信                     |
-| `send_discord_embed_with_feedback` | フィードバック付き Embed を送信            |
-| `send_discord_embed_with_thread`   | Embed メッセージを送信してスレッドを作成   |
-| `reply_to_thread`                  | スレッドに返信（オプションで応答待機）     |
+| コマンド                 | 説明                                                   |
+| ------------------------ | ------------------------------------------------------ |
+| `send_textchannel_message` | テキストチャンネルへ通知を送信                          |
+| `create_thread`            | スレッドを作成                                         |
+| `send_thread_message`      | スレッドへメッセージ送信（テキスト/ボタン応答待機対応） |
 
 詳細は [docs/mcp-server-reference.md](./docs/mcp-server-reference.md) を参照。
 

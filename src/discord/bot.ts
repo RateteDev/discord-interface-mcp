@@ -10,8 +10,7 @@ import {
     type ButtonInteraction,
     type Message
 } from "discord.js";
-import type { FeedbackButton } from "../types/mcp";
-
+import type { FeedbackButton } from "../types/mcp-v2";
 /**
  * Discord Bot の設定インターフェース
  */
@@ -23,7 +22,6 @@ export interface DiscordBotConfig {
     /** メッセージ送信先のテキストチャンネルID */
     textChannelId: string;
 }
-
 /**
  * Discord Bot クラス
  * @description Discord との接続を管理し、メッセージの送受信を行う
@@ -37,14 +35,12 @@ export class DiscordBot {
         timeout?: NodeJS.Timeout;
         timestamp: number;
     }> = new Map();
-
     private threadResolvers: Map<string, {
         resolve: (value: { message: string; userId: string }) => void;
         timeout?: NodeJS.Timeout;
         timestamp: number;
     }> = new Map();
     private cleanupInterval?: NodeJS.Timeout;
-
     /**
      * コンストラクタ
      * @param config Discord Bot の設定
@@ -59,7 +55,6 @@ export class DiscordBot {
             ],
         });
     }
-
     /**
      * イベントハンドラーの設定
      * @private
@@ -69,11 +64,9 @@ export class DiscordBot {
             console.error(`[INFO] Discord Bot logged in as ${client.user.tag}`);
             this.isReady = true;
         });
-
         this.client.on(Events.Error, (error) => {
             console.error("[ERROR] Discord client error:", error);
         });
-
         this.client.on(Events.InteractionCreate, async (interaction) => {
             if (!interaction.isButton()) return;
             
@@ -86,7 +79,6 @@ export class DiscordBot {
                 await this.handleFeedbackInteraction(buttonInteraction, value);
             }
         });
-
         this.client.on(Events.MessageCreate, async (message) => {
             // Botのメッセージは無視
             if (message.author.bot) return;
@@ -112,7 +104,6 @@ export class DiscordBot {
             }
         });
     }
-
     /**
      * Discord Bot を開始
      * @returns Promise<void>
@@ -131,24 +122,6 @@ export class DiscordBot {
             console.error("[ERROR] Failed to start Discord bot:", error);
             throw error;
         }
-    }
-
-    /**
-     * 指定されたチャンネルにメッセージを送信
-     * @param content 送信するメッセージ内容（文字列またはMessageCreateOptions）
-     * @returns Promise<{messageId: string, channelId: string, sentAt: string}>
-     */
-    async sendMessage(content: string | MessageCreateOptions): Promise<{messageId: string, channelId: string, sentAt: string}> {
-        const message = await this.sendMessageInternal(content);
-        const sentAt = new Date().toISOString();
-        
-        console.error(`[DEBUG] Message sent to channel ${this.config.textChannelId}`);
-        
-        return {
-            messageId: message.id,
-            channelId: this.config.textChannelId,
-            sentAt
-        };
     }
 
     /**
@@ -182,7 +155,6 @@ export class DiscordBot {
         await this.client.destroy();
         this.isReady = false;
     }
-
     /**
      * Bot の準備ができているかを確認
      * @returns boolean
@@ -190,7 +162,6 @@ export class DiscordBot {
     getIsReady(): boolean {
         return this.isReady;
     }
-
     /**
      * Bot の準備状態を設定（テスト用）
      * @param ready 準備状態
@@ -198,77 +169,6 @@ export class DiscordBot {
      */
     _setReady(ready: boolean): void {
         this.isReady = ready;
-    }
-
-    /**
-     * フィードバック付きメッセージを送信
-     * @param content MessageCreateOptions（embedを含む）
-     * @param feedbackPrompt フィードバックプロンプト
-     * @param feedbackButtons カスタムフィードバックボタン
-     * @param timeout タイムアウト時間（ミリ秒）
-     * @returns フィードバック結果
-     */
-    async sendMessageWithFeedback(
-        content: MessageCreateOptions,
-        feedbackPrompt: string = "Please select:",
-        feedbackButtons: FeedbackButton[] = [
-            { label: "Yes", value: "yes" },
-            { label: "No", value: "no" }
-        ],
-        timeout?: number
-    ): Promise<{ response: string | 'timeout'; userId?: string; responseTime: number; messageId: string; channelId: string; sentAt: string }> {
-        const startTime = Date.now();
-        const timestamp = Date.now();
-        
-        // ボタンを作成（最大5個まで）
-        const buttons = feedbackButtons.slice(0, 5).map(button => 
-            new ButtonBuilder()
-                .setCustomId(`feedback:${button.value}:${timestamp}`)
-                .setLabel(button.label)
-                .setStyle(ButtonStyle.Primary)
-        );
-
-        const row = new ActionRowBuilder<ButtonBuilder>()
-            .addComponents(buttons);
-
-        const messageOptions: MessageCreateOptions = {
-            ...content,
-            content: feedbackPrompt,
-            components: [row]
-        };
-
-        const message = await this.sendMessageInternal(messageOptions);
-        const messageId = message.id;
-        const sentAt = new Date().toISOString();
-
-        return new Promise((resolve) => {
-            const timeoutHandle = timeout ? setTimeout(() => {
-                this.feedbackResolvers.delete(messageId);
-                resolve({ 
-                    response: 'timeout', 
-                    responseTime: Date.now() - startTime,
-                    messageId,
-                    channelId: this.config.textChannelId,
-                    sentAt
-                });
-            }, timeout) : undefined;
-
-            this.feedbackResolvers.set(messageId, {
-                resolve: (value) => {
-                    if (timeoutHandle) clearTimeout(timeoutHandle);
-                    this.feedbackResolvers.delete(messageId);
-                    resolve({ 
-                        ...value, 
-                        responseTime: Date.now() - startTime,
-                        messageId,
-                        channelId: this.config.textChannelId,
-                        sentAt
-                    });
-                },
-                timeout: timeoutHandle,
-                timestamp: Date.now()
-            });
-        });
     }
 
     /**
@@ -281,17 +181,14 @@ export class DiscordBot {
         if (!this.isReady) {
             throw new Error("Bot is not ready");
         }
-
         const channel = this.client.channels.cache.get(this.config.textChannelId);
         
         if (!channel) {
             throw new Error("Channel not found");
         }
-
         if (!channel.isTextBased()) {
             throw new Error("Channel is not a text channel");
         }
-
         try {
             if ('send' in channel) {
                 return await channel.send(content);
@@ -302,116 +199,6 @@ export class DiscordBot {
             console.error("[ERROR] Failed to send message:", error);
             throw error;
         }
-    }
-
-    /**
-     * メッセージを送信してスレッドを開始
-     * @param content 送信するメッセージ内容（Embed）
-     * @param threadName スレッド名
-     * @returns スレッド作成情報
-     */
-    async sendMessageWithThread(
-        content: MessageCreateOptions,
-        threadName: string
-    ): Promise<{ messageId: string; threadId: string; channelId: string; sentAt: string }> {
-        const sentAt = new Date().toISOString();
-        
-        // Embedメッセージを送信
-        const message = await this.sendMessageInternal(content);
-        const messageId = message.id;
-        const channelId = message.channel.id;
-        
-        // スレッドを開始
-        const thread = await message.startThread({
-            name: threadName,
-            autoArchiveDuration: 60 // 1時間後に自動アーカイブ
-        });
-        const threadId = thread.id;
-        
-        return {
-            messageId,
-            threadId,
-            channelId,
-            sentAt
-        };
-    }
-
-    /**
-     * スレッドに返信し、オプションでユーザーの応答を待機
-     * @param threadId スレッドID
-     * @param content 送信するメッセージ内容（Embed）
-     * @param waitForReply 応答を待機するか（デフォルト: true）
-     * @param timeout タイムアウトミリ秒
-     * @returns 送信情報とオプションでユーザーの応答
-     */
-    async replyToThread(
-        threadId: string,
-        content: MessageCreateOptions,
-        waitForReply: boolean = true,
-        timeout?: number
-    ): Promise<{ messageId: string; threadId: string; sentAt: string; userReply?: { message: string | 'timeout'; userId?: string; responseTime: number } }> {
-        const startTime = Date.now();
-        const sentAt = new Date().toISOString();
-        
-        // スレッドチャンネルを取得
-        const thread = this.client.channels.cache.get(threadId);
-        if (!thread || !thread.isThread()) {
-            throw new Error("Thread not found or invalid thread ID");
-        }
-        
-        // メッセージを送信
-        const message = await thread.send(content);
-        const messageId = message.id;
-        
-        // 応答を待機しない場合は即座に返す
-        if (!waitForReply) {
-            return {
-                messageId,
-                threadId,
-                sentAt
-            };
-        }
-        
-        // 応答を待機する場合
-        return new Promise((resolve) => {
-            const timeoutMs = timeout || Number(process.env.DISCORD_FEEDBACK_TIMEOUT_SECONDS) * 1000 || 0;
-            let timeoutHandle: NodeJS.Timeout | undefined;
-            
-            if (timeoutMs > 0) {
-                timeoutHandle = setTimeout(() => {
-                    this.threadResolvers.delete(threadId);
-                    resolve({ 
-                        messageId,
-                        threadId,
-                        sentAt,
-                        userReply: {
-                            message: 'timeout',
-                            responseTime: Date.now() - startTime
-                        }
-                    });
-                }, timeoutMs);
-            }
-            
-            // resolverを登録
-            this.threadResolvers.set(threadId, {
-                resolve: (value) => {
-                    if (timeoutHandle) clearTimeout(timeoutHandle);
-                    this.threadResolvers.delete(threadId);
-                    resolve({ 
-                        messageId,
-                        threadId,
-                        sentAt,
-                        userReply: {
-                            message: value.message,
-                            userId: value.userId,
-                            responseTime: Date.now() - startTime
-                        }
-                    });
-                },
-                timeout: timeoutHandle,
-                timestamp: Date.now()
-            });
-        });
     }
 
     /**
@@ -447,7 +234,6 @@ export class DiscordBot {
             }).catch(() => {});
         }
     }
-
     /**
      * 古いfeedbackResolverとthreadResolverをクリーンアップ
      * @private
@@ -477,5 +263,185 @@ export class DiscordBot {
                 console.error(`[DEBUG] Cleaned up old thread resolver for thread ${threadId}`);
             }
         }
+    }
+    /**
+     * テキストチャンネルにメッセージを送信
+     * @param content MessageCreateOptions（embedを含む）
+     * @returns 送信情報
+     */
+    async sendTextChannelMessage(
+        content: MessageCreateOptions
+    ): Promise<{ messageId: string; channelId: string; sentAt: string; status: "success" }> {
+        const sentAt = new Date().toISOString();
+        const message = await this.sendMessageInternal(content);
+        
+        return {
+            messageId: message.id,
+            channelId: this.config.textChannelId,
+            sentAt,
+            status: "success"
+        };
+    }
+    /**
+     * スレッドを作成
+     * @param threadName スレッド名
+     * @param initialMessage 初期メッセージ
+     * @returns スレッド作成情報
+     */
+    async createThread(
+        threadName: string,
+        initialMessage: MessageCreateOptions
+    ): Promise<{ messageId: string; channelId: string; threadId: string; sentAt: string; status: "success" }> {
+        const sentAt = new Date().toISOString();
+        
+        // Embedメッセージを送信
+        const message = await this.sendMessageInternal(initialMessage);
+        const messageId = message.id;
+        const channelId = message.channel.id;
+        
+        // スレッドを開始
+        const thread = await message.startThread({
+            name: threadName,
+            autoArchiveDuration: 60 // 1時間後に自動アーカイブ
+        });
+        const threadId = thread.id;
+        
+        return {
+            messageId,
+            channelId,
+            threadId,
+            sentAt,
+            status: "success"
+        };
+    }
+    /**
+     * スレッドにメッセージを送信
+     * @param threadId スレッドID
+     * @param content メッセージ内容
+     * @param waitForResponse 応答待機設定
+     * @param timeout タイムアウトミリ秒
+     * @returns 送信情報と応答（該当する場合）
+     */
+    async sendThreadMessage(
+        threadId: string,
+        content: MessageCreateOptions,
+        waitForResponse?: { type: "text" | "button"; buttons?: FeedbackButton[] },
+        timeout?: number
+    ): Promise<any> {
+        const sentAt = new Date().toISOString();
+        const startTime = Date.now();
+        
+        const thread = this.client.channels.cache.get(threadId);
+        if (!thread || !thread.isThread()) {
+            throw new Error("Thread not found");
+        }
+        // 応答を待機しない場合
+        if (!waitForResponse) {
+            const message = await thread.send(content);
+            return {
+                messageId: message.id,
+                threadId,
+                sentAt,
+                status: "success"
+            };
+        }
+        // テキスト応答を待機する場合
+        if (waitForResponse.type === "text") {
+            const message = await thread.send(content);
+            const messageId = message.id;
+            return new Promise((resolve) => {
+                const timeoutHandle = timeout ? setTimeout(() => {
+                    this.threadResolvers.delete(threadId);
+                    resolve({
+                        messageId,
+                        threadId,
+                        sentAt,
+                        status: "success",
+                        response: {
+                            type: "text",
+                            text: "timeout",
+                            responseTime: Date.now() - startTime
+                        }
+                    });
+                }, timeout) : undefined;
+                this.threadResolvers.set(threadId, {
+                    resolve: (value) => {
+                        if (timeoutHandle) clearTimeout(timeoutHandle);
+                        this.threadResolvers.delete(threadId);
+                        resolve({
+                            messageId,
+                            threadId,
+                            sentAt,
+                            status: "success",
+                            response: {
+                                type: "text",
+                                text: value.message,
+                                userId: value.userId,
+                                responseTime: Date.now() - startTime
+                            }
+                        });
+                    },
+                    timeout: timeoutHandle,
+                    timestamp: Date.now()
+                });
+            });
+        }
+        // ボタン応答を待機する場合
+        if (waitForResponse.type === "button" && waitForResponse.buttons) {
+            const timestamp = Date.now();
+            
+            // ボタンを作成（最大5個まで）
+            const buttons = waitForResponse.buttons.slice(0, 5).map(button => 
+                new ButtonBuilder()
+                    .setCustomId(`feedback:${button.value}:${timestamp}`)
+                    .setLabel(button.label)
+                    .setStyle(ButtonStyle.Primary)
+            );
+            const row = new ActionRowBuilder<ButtonBuilder>()
+                .addComponents(buttons);
+            const messageOptions: MessageCreateOptions = {
+                ...content,
+                components: [row]
+            };
+            const message = await thread.send(messageOptions);
+            const messageId = message.id;
+            return new Promise((resolve) => {
+                const timeoutHandle = timeout ? setTimeout(() => {
+                    this.feedbackResolvers.delete(messageId);
+                    resolve({
+                        messageId,
+                        threadId,
+                        sentAt,
+                        status: "success",
+                        response: {
+                            type: "button",
+                            value: "timeout",
+                            responseTime: Date.now() - startTime
+                        }
+                    });
+                }, timeout) : undefined;
+                this.feedbackResolvers.set(messageId, {
+                    resolve: (value) => {
+                        if (timeoutHandle) clearTimeout(timeoutHandle);
+                        this.feedbackResolvers.delete(messageId);
+                        resolve({
+                            messageId,
+                            threadId,
+                            sentAt,
+                            status: "success",
+                            response: {
+                                type: "button",
+                                value: value.response,
+                                userId: value.userId,
+                                responseTime: Date.now() - startTime
+                            }
+                        });
+                    },
+                    timeout: timeoutHandle,
+                    timestamp: Date.now()
+                });
+            });
+        }
+        throw new Error("Invalid waitForResponse configuration");
     }
 }
