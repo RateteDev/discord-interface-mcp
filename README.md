@@ -22,6 +22,7 @@
 * **マルチユーザー対応** — チームやコミュニティで共同で利用可能
 * **通知** — Discord の通知機能で情報を即座に受け取れる
 * **リッチ UI** — Embed やボタンで直感的に閲覧・操作が可能
+* **スレッド対応** — Discord スレッドで継続的な対話が可能
 * **クロスプラットフォーム** — モバイルアプリ・ブラウザ・PC からアクセス可能
 
 ## インストール
@@ -38,10 +39,12 @@
 
 ## MCP Tools
 
-| コマンド                           | 説明                            |
-| ---------------------------------- | ------------------------------- |
-| `send_discord_embed`               | Embed メッセージを送信          |
-| `send_discord_embed_with_feedback` | フィードバック付き Embed を送信 |
+| コマンド                           | 説明                                       |
+| ---------------------------------- | ------------------------------------------ |
+| `send_discord_embed`               | Embed メッセージを送信                     |
+| `send_discord_embed_with_feedback` | フィードバック付き Embed を送信            |
+| `send_discord_embed_with_thread`   | Embed メッセージを送信してスレッドを作成   |
+| `reply_to_thread`                  | スレッドに返信（オプションで応答待機）     |
 
 詳細は [docs/mcp-server-reference.md](./docs/mcp-server-reference.md) を参照。
 

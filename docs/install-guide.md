@@ -16,13 +16,18 @@
 2. 「New Application」をクリックしてアプリケーションを作成
 3. 左メニューの「Bot」を選択
 4. 「Reset Token」をクリックしてトークンを生成（後で使用）
+5. 「Privileged Gateway Intents」セクションで以下を有効化：
+   - **MESSAGE CONTENT INTENT** - メッセージ内容の読み取り（スレッド応答に必要）
 
 ### 2. Bot の権限設定
 
 Botセクションで以下の権限を有効化：
 - **Send Messages** - メッセージ送信
 - **Embed Links** - Embedメッセージ送信
-- **Read Message History** - メッセージ履歴読み取り（オプション）
+- **Create Public Threads** - パブリックスレッドの作成
+- **Send Messages in Threads** - スレッド内でのメッセージ送信
+- **Read Message History** - メッセージ履歴読み取り
+- **Add Reactions** - リアクションの追加
 
 ### 3. Bot をサーバーに招待
 
