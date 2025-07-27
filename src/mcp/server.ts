@@ -473,11 +473,24 @@ export class MCPServer {
                 description?: string;
                 color?: number;
                 fields?: Array<{ name: string; value: string; inline?: boolean }>;
+                footer?: { text: string };
+                timestamp?: string;
             } = {};
             
             if (validatedArgs.title) embed.title = validatedArgs.title;
             if (validatedArgs.description) embed.description = validatedArgs.description;
-            if (validatedArgs.color !== undefined) embed.color = validatedArgs.color;
+            
+            // 返信待ちの場合の装飾
+            if (validatedArgs.waitForReply) {
+                // 色が指定されていない場合は青色をデフォルトに
+                embed.color = validatedArgs.color !== undefined ? validatedArgs.color : 0x0099FF;
+                embed.footer = { text: "💬 返信をお待ちしています..." };
+                embed.timestamp = new Date().toISOString();
+            } else {
+                // 返信不要の場合は通常の色
+                if (validatedArgs.color !== undefined) embed.color = validatedArgs.color;
+            }
+            
             if (validatedArgs.fields) embed.fields = validatedArgs.fields;
 
             const timeoutSeconds = env.DISCORD_FEEDBACK_TIMEOUT_SECONDS;
