@@ -10,11 +10,15 @@ import { env } from "../utils/env";
 import type { DiscordBot } from "../discord/bot";
 import type { 
     DiscordMessageResponse, 
-    DiscordFeedbackResponse 
+    DiscordFeedbackResponse,
+    DiscordThreadResponse,
+    DiscordThreadReplyResponse 
 } from "../types/mcp";
 import { 
     SendDiscordEmbedArgsSchema,
     SendDiscordEmbedWithFeedbackArgsSchema,
+    SendDiscordEmbedWithThreadArgsSchema,
+    ReplyToThreadArgsSchema,
     ColorNameSchema
 } from "../validation/schemas";
 
@@ -169,6 +173,90 @@ export class MCPServer {
                         },
                         required: []
                     }
+                },
+                {
+                    name: "send_discord_embed_with_thread",
+                    description: "Send an embed message and create a new thread",
+                    inputSchema: {
+                        type: "object",
+                        properties: {
+                            title: {
+                                type: "string",
+                                description: "The title of the embed"
+                            },
+                            description: {
+                                type: "string",
+                                description: "The description of the embed"
+                            },
+                            color: {
+                                type: "string",
+                                description: "The color of the embed (CSS basic 16 color names)",
+                                enum: ["black", "silver", "gray", "white", "maroon", "red", "purple", "fuchsia", "green", "lime", "olive", "yellow", "navy", "blue", "teal", "aqua"]
+                            },
+                            fields: {
+                                type: "array",
+                                items: {
+                                    type: "object",
+                                    properties: {
+                                        name: { type: "string" },
+                                        value: { type: "string" },
+                                        inline: { type: "boolean" }
+                                    },
+                                    required: ["name", "value"]
+                                },
+                                description: "Array of embed fields"
+                            },
+                            threadName: {
+                                type: "string",
+                                description: "Name of the thread to create (1-100 characters)"
+                            }
+                        },
+                        required: ["threadName"]
+                    }
+                },
+                {
+                    name: "reply_to_thread",
+                    description: "Reply to an existing Discord thread with an embed message and optionally wait for user response",
+                    inputSchema: {
+                        type: "object",
+                        properties: {
+                            threadId: {
+                                type: "string",
+                                description: "The ID of the thread to reply to"
+                            },
+                            title: {
+                                type: "string",
+                                description: "The title of the embed"
+                            },
+                            description: {
+                                type: "string",
+                                description: "The description of the embed"
+                            },
+                            color: {
+                                type: "string",
+                                description: "The color of the embed (CSS basic 16 color names)",
+                                enum: ["black", "silver", "gray", "white", "maroon", "red", "purple", "fuchsia", "green", "lime", "olive", "yellow", "navy", "blue", "teal", "aqua"]
+                            },
+                            fields: {
+                                type: "array",
+                                items: {
+                                    type: "object",
+                                    properties: {
+                                        name: { type: "string" },
+                                        value: { type: "string" },
+                                        inline: { type: "boolean" }
+                                    },
+                                    required: ["name", "value"]
+                                },
+                                description: "Array of embed fields"
+                            },
+                            waitForReply: {
+                                type: "boolean",
+                                description: "Whether to wait for user reply (default: true)"
+                            }
+                        },
+                        required: ["threadId"]
+                    }
                 }
             ]
         };
@@ -192,6 +280,12 @@ export class MCPServer {
             
             case "send_discord_embed_with_feedback":
                 return this.sendDiscordEmbedWithFeedback(args);
+            
+            case "send_discord_embed_with_thread":
+                return this.sendDiscordEmbedWithThread(args);
+            
+            case "reply_to_thread":
+                return this.replyToThread(args);
             
             default:
                 throw new Error(`Unknown tool: ${name}`);
@@ -308,6 +402,128 @@ export class MCPServer {
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : String(error);
             throw new Error(`Failed to send message to Discord: ${errorMessage}`);
+        }
+    }
+
+    /**
+     * Discord に Embed メッセージを送信してスレッドを開始
+     * @private
+     * @param args Embed 送信引数とスレッド名
+     * @returns 送信結果とスレッド情報
+     */
+    private async sendDiscordEmbedWithThread(args: unknown): Promise<CallToolResult> {
+        try {
+            // Zodバリデーション
+            const validatedArgs = SendDiscordEmbedWithThreadArgsSchema.parse(args);
+            
+            const embed: {
+                title?: string;
+                description?: string;
+                color?: number;
+                fields?: Array<{ name: string; value: string; inline?: boolean }>;
+            } = {};
+            
+            if (validatedArgs.title) embed.title = validatedArgs.title;
+            if (validatedArgs.description) embed.description = validatedArgs.description;
+            if (validatedArgs.color !== undefined) embed.color = validatedArgs.color;
+            if (validatedArgs.fields) embed.fields = validatedArgs.fields;
+
+            const threadResult = await this.discordBot.sendMessageWithThread(
+                { embeds: [embed] },
+                validatedArgs.threadName
+            );
+            
+            console.error(`[INFO] Sent embed with thread to Discord. Thread ID: ${threadResult.threadId}`);
+            
+            const response: DiscordThreadResponse = {
+                sentAt: threadResult.sentAt,
+                messageId: threadResult.messageId,
+                channelId: threadResult.channelId,
+                status: "success",
+                threadId: threadResult.threadId
+            };
+            
+            return {
+                content: [
+                    {
+                        type: "text",
+                        text: JSON.stringify(response, null, 2)
+                    }
+                ]
+            };
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            throw new Error(`Failed to send message with thread to Discord: ${errorMessage}`);
+        }
+    }
+
+    /**
+     * Discord スレッドに返信
+     * @private
+     * @param args スレッドID と Embed 送信引数
+     * @returns 送信結果とオプションでユーザーの応答
+     */
+    private async replyToThread(args: unknown): Promise<CallToolResult> {
+        try {
+            // Zodバリデーション
+            const validatedArgs = ReplyToThreadArgsSchema.parse(args);
+            
+            const embed: {
+                title?: string;
+                description?: string;
+                color?: number;
+                fields?: Array<{ name: string; value: string; inline?: boolean }>;
+                footer?: { text: string };
+                timestamp?: string;
+            } = {};
+            
+            if (validatedArgs.title) embed.title = validatedArgs.title;
+            if (validatedArgs.description) embed.description = validatedArgs.description;
+            
+            // 返信待ちの場合の装飾
+            if (validatedArgs.waitForReply) {
+                // 色が指定されていない場合は青色をデフォルトに
+                embed.color = validatedArgs.color !== undefined ? validatedArgs.color : 0x0099FF;
+                embed.footer = { text: "💬 返信をお待ちしています..." };
+                embed.timestamp = new Date().toISOString();
+            } else {
+                // 返信不要の場合は通常の色
+                if (validatedArgs.color !== undefined) embed.color = validatedArgs.color;
+            }
+            
+            if (validatedArgs.fields) embed.fields = validatedArgs.fields;
+
+            const timeoutSeconds = env.DISCORD_FEEDBACK_TIMEOUT_SECONDS;
+            const timeoutMs = timeoutSeconds ? timeoutSeconds * 1000 : undefined;
+
+            const result = await this.discordBot.replyToThread(
+                validatedArgs.threadId,
+                { embeds: [embed] },
+                validatedArgs.waitForReply,
+                timeoutMs
+            );
+            
+            console.error(`[INFO] Sent reply to thread ${validatedArgs.threadId}. Wait for reply: ${validatedArgs.waitForReply}`);
+            
+            const response: DiscordThreadReplyResponse = {
+                sentAt: result.sentAt,
+                messageId: result.messageId,
+                threadId: result.threadId,
+                status: "success",
+                userReply: result.userReply
+            };
+            
+            return {
+                content: [
+                    {
+                        type: "text",
+                        text: JSON.stringify(response, null, 2)
+                    }
+                ]
+            };
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            throw new Error(`Failed to reply to thread: ${errorMessage}`);
         }
     }
 
