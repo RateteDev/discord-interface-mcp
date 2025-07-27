@@ -29,6 +29,11 @@ jobs:
 
       - name: Run tests
         run: bun test
+        env:
+          DISCORD_BOT_TOKEN: "test_token_for_ci"
+          DISCORD_GUILD_ID: "123456789012345678"
+          DISCORD_TEXT_CHANNEL_ID: "123456789012345678"
+          NODE_ENV: "test"
 
   publish:
     needs: build-and-test
