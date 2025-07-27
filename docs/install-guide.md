@@ -101,7 +101,7 @@ claude mcp add discord-interface npx discord-interface-mcp \
   -e DISCORD_BOT_TOKEN="YOUR_BOT_TOKEN_HERE" \
   -e DISCORD_GUILD_ID="YOUR_GUILD_ID_HERE" \
   -e DISCORD_TEXT_CHANNEL_ID="YOUR_CHANNEL_ID_HERE" \
-  -e DISCORD_FEEDBACK_TIMEOUT_SECONDS="30"
+  -e DISCORD_FEEDBACK_TIMEOUT_SECONDS="30" # optional
 ```
 
 **PowerShell (Windows):**
@@ -110,7 +110,7 @@ claude mcp add discord-interface cmd /c npx discord-interface-mcp `
   -e DISCORD_BOT_TOKEN="YOUR_BOT_TOKEN_HERE" `
   -e DISCORD_GUILD_ID="YOUR_GUILD_ID_HERE" `
   -e DISCORD_TEXT_CHANNEL_ID="YOUR_CHANNEL_ID_HERE" `
-  -e DISCORD_FEEDBACK_TIMEOUT_SECONDS="30"
+  -e DISCORD_FEEDBACK_TIMEOUT_SECONDS="30" # optional
 ```
 
 > **注意**: `YOUR_*_HERE`の部分を実際の値に置き換えてください
