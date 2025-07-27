@@ -2,40 +2,39 @@
  * MCP 関連の型定義
  */
 
+// Zodスキーマからの型定義をインポート
+export type { 
+    SendDiscordEmbedArgs, 
+    SendDiscordEmbedWithFeedbackArgs,
+    FeedbackButton,
+    ColorName
+} from "../validation/schemas";
+
 /**
- * Discord Embed 送信ツールの引数
+ * Discord Bot のレスポンス情報
  */
-export interface SendDiscordEmbedArgs {
-    /** Embed のタイトル */
-    title?: string;
-    /** Embed の説明 */
-    description?: string;
-    /** Embed の色（10進数） */
-    color?: number;
-    /** Embed のフィールド */
-    fields?: Array<{
-        name: string;
-        value: string;
-        inline?: boolean;
-    }>;
+export interface DiscordMessageResponse {
+    /** 送信時刻（ISO 8601形式） */
+    sentAt: string;
+    /** DiscordメッセージID */
+    messageId: string;
+    /** 送信先チャンネルID */
+    channelId: string;
+    /** ステータス */
+    status: "success";
 }
 
 /**
- * Discord フィードバック付き Embed 送信ツールの引数
+ * フィードバック付きDiscord Bot のレスポンス情報
  */
-export interface SendDiscordEmbedWithFeedbackArgs {
-    /** Embed のタイトル */
-    title?: string;
-    /** Embed の説明 */
-    description?: string;
-    /** Embed の色（10進数） */
-    color?: number;
-    /** Embed のフィールド */
-    fields?: Array<{
-        name: string;
-        value: string;
-        inline?: boolean;
-    }>;
-    /** ボタンの上に表示するテキスト */
-    feedbackPrompt?: string;
+export interface DiscordFeedbackResponse extends DiscordMessageResponse {
+    /** フィードバック情報 */
+    feedback: {
+        /** ユーザーの応答 */
+        response: string | "timeout";
+        /** 応答したユーザーID（タイムアウト時は未定義） */
+        userId?: string;
+        /** 応答時間（ミリ秒） */
+        responseTime: number;
+    };
 }

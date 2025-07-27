@@ -9,7 +9,15 @@ import {
 import { logger } from "../utils/logger";
 import { env } from "../utils/env";
 import type { DiscordBot } from "../discord/bot";
-import type { SendDiscordEmbedArgs, SendDiscordEmbedWithFeedbackArgs } from "../types/mcp";
+import type { 
+    DiscordMessageResponse, 
+    DiscordFeedbackResponse 
+} from "../types/mcp";
+import { 
+    SendDiscordEmbedArgsSchema,
+    SendDiscordEmbedWithFeedbackArgsSchema,
+    ColorNameSchema
+} from "../validation/schemas";
 
 /**
  * MCP サーバークラス
@@ -81,8 +89,9 @@ export class MCPServer {
                                 description: "The description of the embed"
                             },
                             color: {
-                                type: "number",
-                                description: "The color of the embed (in decimal)"
+                                type: "string",
+                                description: "The color of the embed (CSS basic 16 color names)",
+                                enum: ["black", "silver", "gray", "white", "maroon", "red", "purple", "fuchsia", "green", "lime", "olive", "yellow", "navy", "blue", "teal", "aqua"]
                             },
                             fields: {
                                 type: "array",
@@ -103,7 +112,7 @@ export class MCPServer {
                 },
                 {
                     name: "send_discord_embed_with_feedback",
-                    description: "Send an embed message with Yes/No buttons and wait for user feedback",
+                    description: "Send an embed message with customizable feedback buttons and wait for user response",
                     inputSchema: {
                         type: "object",
                         properties: {
@@ -116,8 +125,9 @@ export class MCPServer {
                                 description: "The description of the embed"
                             },
                             color: {
-                                type: "number",
-                                description: "The color of the embed (in decimal)"
+                                type: "string",
+                                description: "The color of the embed (CSS basic 16 color names)",
+                                enum: ["black", "silver", "gray", "white", "maroon", "red", "purple", "fuchsia", "green", "lime", "olive", "yellow", "navy", "blue", "teal", "aqua"]
                             },
                             fields: {
                                 type: "array",
@@ -136,6 +146,26 @@ export class MCPServer {
                                 type: "string",
                                 description: "The prompt text above the buttons",
                                 default: "Please select:"
+                            },
+                            feedbackButtons: {
+                                type: "array",
+                                items: {
+                                    type: "object",
+                                    properties: {
+                                        label: { 
+                                            type: "string",
+                                            description: "Button display text (1-80 characters)"
+                                        },
+                                        value: { 
+                                            type: "string",
+                                            description: "Button response value (1-100 characters, supports unicode including Japanese, Chinese, etc.)"
+                                        }
+                                    },
+                                    required: ["label", "value"]
+                                },
+                                description: "Custom feedback buttons (1-5 buttons, defaults to Yes/No)",
+                                maxItems: 5,
+                                minItems: 1
                             }
                         },
                         required: []
@@ -177,7 +207,9 @@ export class MCPServer {
      */
     private async sendDiscordEmbed(args: unknown): Promise<CallToolResult> {
         try {
-            const typedArgs = args as SendDiscordEmbedArgs;
+            // Zodバリデーション
+            const validatedArgs = SendDiscordEmbedArgsSchema.parse(args);
+            
             const embed: {
                 title?: string;
                 description?: string;
@@ -185,22 +217,29 @@ export class MCPServer {
                 fields?: Array<{ name: string; value: string; inline?: boolean }>;
             } = {};
             
-            if (typedArgs.title) embed.title = typedArgs.title;
-            if (typedArgs.description) embed.description = typedArgs.description;
-            if (typedArgs.color !== undefined) embed.color = typedArgs.color;
-            if (typedArgs.fields) embed.fields = typedArgs.fields;
+            if (validatedArgs.title) embed.title = validatedArgs.title;
+            if (validatedArgs.description) embed.description = validatedArgs.description;
+            if (validatedArgs.color !== undefined) embed.color = validatedArgs.color;
+            if (validatedArgs.fields) embed.fields = validatedArgs.fields;
 
-            await this.discordBot.sendMessage({
+            const messageInfo = await this.discordBot.sendMessage({
                 embeds: [embed]
             });
             
             logger.info("Sent embed message to Discord");
             
+            const response: DiscordMessageResponse = {
+                sentAt: messageInfo.sentAt,
+                messageId: messageInfo.messageId,
+                channelId: messageInfo.channelId,
+                status: "success"
+            };
+            
             return {
                 content: [
                     {
                         type: "text",
-                        text: "Embed message sent to Discord successfully"
+                        text: JSON.stringify(response, null, 2)
                     }
                 ]
             };
@@ -218,7 +257,9 @@ export class MCPServer {
      */
     private async sendDiscordEmbedWithFeedback(args: unknown): Promise<CallToolResult> {
         try {
-            const typedArgs = args as SendDiscordEmbedWithFeedbackArgs;
+            // Zodバリデーション
+            const validatedArgs = SendDiscordEmbedWithFeedbackArgsSchema.parse(args);
+            
             const embed: {
                 title?: string;
                 description?: string;
@@ -226,31 +267,42 @@ export class MCPServer {
                 fields?: Array<{ name: string; value: string; inline?: boolean }>;
             } = {};
             
-            if (typedArgs.title) embed.title = typedArgs.title;
-            if (typedArgs.description) embed.description = typedArgs.description;
-            if (typedArgs.color !== undefined) embed.color = typedArgs.color;
-            if (typedArgs.fields) embed.fields = typedArgs.fields;
+            if (validatedArgs.title) embed.title = validatedArgs.title;
+            if (validatedArgs.description) embed.description = validatedArgs.description;
+            if (validatedArgs.color !== undefined) embed.color = validatedArgs.color;
+            if (validatedArgs.fields) embed.fields = validatedArgs.fields;
 
-            const feedbackPrompt = typedArgs.feedbackPrompt || "Please select:";
+            const feedbackPrompt = validatedArgs.feedbackPrompt || "Please select:";
+            const feedbackButtons = validatedArgs.feedbackButtons;
             const timeoutSeconds = env.DISCORD_FEEDBACK_TIMEOUT_SECONDS;
             const timeoutMs = timeoutSeconds ? timeoutSeconds * 1000 : undefined;
 
             const feedbackResult = await this.discordBot.sendMessageWithFeedback(
                 { embeds: [embed] },
                 feedbackPrompt,
+                feedbackButtons,
                 timeoutMs
             );
             
             logger.info(`Sent embed with feedback to Discord. Response: ${feedbackResult.response}`);
             
+            const response: DiscordFeedbackResponse = {
+                sentAt: feedbackResult.sentAt!,
+                messageId: feedbackResult.messageId!,
+                channelId: feedbackResult.channelId!,
+                status: "success",
+                feedback: {
+                    response: feedbackResult.response,
+                    userId: feedbackResult.userId,
+                    responseTime: feedbackResult.responseTime
+                }
+            };
+            
             return {
                 content: [
                     {
                         type: "text",
-                        text: JSON.stringify({
-                            message: "Embed message sent and feedback received",
-                            feedback: feedbackResult
-                        }, null, 2)
+                        text: JSON.stringify(response, null, 2)
                     }
                 ]
             };

@@ -9,7 +9,9 @@ describe("Discord と MCP の統合テスト", () => {
     let mockSend: any;
 
     beforeEach(() => {
-        mockSend = mock(() => Promise.resolve());
+        mockSend = mock(() => Promise.resolve({
+            id: "test-message-123"
+        }));
         mockChannel = {
             isTextBased: () => true,
             send: mockSend
@@ -80,7 +82,7 @@ describe("Discord と MCP の統合テスト", () => {
             const embedData = {
                 title: "Integration Test",
                 description: "This is an integration test",
-                color: 0x00ff00,
+                color: "lime",
                 fields: [
                     { name: "Status", value: "Success", inline: true },
                     { name: "Environment", value: "Test", inline: true }
@@ -94,7 +96,7 @@ describe("Discord と MCP の統合テスト", () => {
                 embeds: [{
                     title: "Integration Test",
                     description: "This is an integration test",
-                    color: 0x00ff00,
+                    color: 0x00FF00, // lime
                     fields: [
                         { name: "Status", value: "Success", inline: true },
                         { name: "Environment", value: "Test", inline: true }
@@ -102,14 +104,12 @@ describe("Discord と MCP の統合テスト", () => {
                 }]
             });
             
-            expect(result).toEqual({
-                content: [
-                    {
-                        type: "text",
-                        text: "Embed message sent to Discord successfully"
-                    }
-                ]
-            });
+            // レスポンスの内容をパース
+            const parsedResult = JSON.parse(result.content[0].text);
+            expect(parsedResult.status).toBe("success");
+            expect(parsedResult.messageId).toBe("test-message-123");
+            expect(parsedResult.channelId).toBe("test-channel-id");
+            expect(parsedResult.sentAt).toBeDefined();
         });
 
         it("Discord Bot が準備できていない場合、MCP ツールはエラーを返す", async () => {

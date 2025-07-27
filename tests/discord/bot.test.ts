@@ -9,7 +9,9 @@ describe("DiscordBot", () => {
     let mockSend: any;
 
     beforeEach(() => {
-        mockSend = mock(() => Promise.resolve());
+        mockSend = mock(() => Promise.resolve({
+            id: "test-message-123"
+        }));
         mockChannel = {
             isTextBased: () => true,
             send: mockSend
