@@ -21,6 +21,8 @@ export interface DiscordBotConfig {
     guildId: string;
     /** メッセージ送信先のテキストチャンネルID */
     textChannelId: string;
+    /** アクセス制御用のロールID（オプション） */
+    allowedRoleId?: string;
 }
 /**
  * Discord Bot クラス
@@ -52,9 +54,43 @@ export class DiscordBot {
                 GatewayIntentBits.Guilds,
                 GatewayIntentBits.GuildMessages,
                 GatewayIntentBits.MessageContent,
+                GatewayIntentBits.GuildMembers,
             ],
         });
     }
+    /**
+     * ユーザーの権限をチェック
+     * @description 設定されたロールIDを持つユーザーかどうかを確認
+     * @param userId ユーザーID
+     * @returns 権限があるかどうか
+     * @private
+     */
+    private async checkUserPermission(userId: string): Promise<boolean> {
+        // ロールベースアクセス制御が設定されていない場合は全許可
+        if (!this.config.allowedRoleId) {
+            return true;
+        }
+
+        try {
+            const guild = this.client.guilds.cache.get(this.config.guildId);
+            if (!guild) {
+                console.error("[ERROR] Guild not found for permission check");
+                return false;
+            }
+
+            const member = await guild.members.fetch(userId);
+            if (!member) {
+                console.error("[ERROR] Member not found for permission check");
+                return false;
+            }
+
+            return member.roles.cache.has(this.config.allowedRoleId);
+        } catch (error) {
+            console.error("[ERROR] Error checking user permission:", error);
+            return false;
+        }
+    }
+
     /**
      * イベントハンドラーの設定
      * @private
@@ -71,6 +107,17 @@ export class DiscordBot {
             if (!interaction.isButton()) return;
             
             const buttonInteraction = interaction as ButtonInteraction;
+            
+            // 全操作に対して権限チェックを実行
+            const hasPermission = await this.checkUserPermission(buttonInteraction.user.id);
+            if (!hasPermission) {
+                await buttonInteraction.reply({
+                    content: '❌ この操作を実行する権限がありません。必要なロールが設定されていることを確認してください。',
+                    ephemeral: true
+                });
+                return;
+            }
+            
             const parts = buttonInteraction.customId.split(':');
             const prefix = parts[0];
             const value = parts[1] || '';
@@ -85,6 +132,17 @@ export class DiscordBot {
             
             // スレッド内のメッセージかチェック
             if (!message.channel.isThread()) return;
+            
+            // 全操作に対して権限チェックを実行
+            const hasPermission = await this.checkUserPermission(message.author.id);
+            if (!hasPermission) {
+                try {
+                    await message.reply('❌ この操作を実行する権限がありません。必要なロールが設定されていることを確認してください。');
+                } catch (error) {
+                    console.error('[ERROR] Failed to send permission denied message:', error);
+                }
+                return;
+            }
             
             const threadId = message.channel.id;
             const resolver = this.threadResolvers.get(threadId);

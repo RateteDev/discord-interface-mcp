@@ -1,12 +1,14 @@
 import { describe, expect, it, beforeEach, afterEach, mock } from "bun:test";
 import { DiscordBot } from "../../src/discord/bot";
-import { Client, Events, type MessageCreateOptions } from "discord.js";
+import { Client, Events, type MessageCreateOptions, type ButtonInteraction, type Message } from "discord.js";
 
 describe("DiscordBot", () => {
     let bot: DiscordBot;
     let mockClient: Client;
     let mockChannel: any;
     let mockSend: any;
+    let mockGuild: any;
+    let mockMember: any;
 
     beforeEach(() => {
         mockSend = mock(() => Promise.resolve({
@@ -17,6 +19,20 @@ describe("DiscordBot", () => {
             send: mockSend
         };
         
+        mockMember = {
+            roles: {
+                cache: {
+                    has: mock((roleId: string) => roleId === "allowed-role-id")
+                }
+            }
+        };
+        
+        mockGuild = {
+            members: {
+                fetch: mock((userId: string) => Promise.resolve(mockMember))
+            }
+        };
+        
         mockClient = {
             login: mock(() => Promise.resolve("token")),
             on: mock((event: string, handler: Function) => mockClient),
@@ -25,6 +41,11 @@ describe("DiscordBot", () => {
             channels: {
                 cache: {
                     get: mock(() => mockChannel)
+                }
+            },
+            guilds: {
+                cache: {
+                    get: mock(() => mockGuild)
                 }
             },
             user: {
@@ -82,6 +103,58 @@ describe("DiscordBot", () => {
             expect(bot.getIsReady()).toBe(false);
             (bot as any)._setReady(true);
             expect(bot.getIsReady()).toBe(true);
+        });
+    });
+
+    describe("ロールベースアクセス制御", () => {
+        describe("allowedRoleIdが設定されていない場合", () => {
+            it("全ユーザーを許可する", async () => {
+                const result = await (bot as any).checkUserPermission("any-user-id");
+                expect(result).toBe(true);
+            });
+        });
+
+        describe("allowedRoleIdが設定されている場合", () => {
+            beforeEach(() => {
+                bot = new DiscordBot({
+                    token: "test-token",
+                    guildId: "test-guild-id",
+                    textChannelId: "test-channel-id",
+                    allowedRoleId: "allowed-role-id"
+                });
+                (bot as any).client = mockClient;
+            });
+
+            it("許可されたロールを持つユーザーを許可する", async () => {
+                const result = await (bot as any).checkUserPermission("user-with-role");
+                expect(result).toBe(true);
+                expect(mockGuild.members.fetch).toHaveBeenCalledWith("user-with-role");
+                expect(mockMember.roles.cache.has).toHaveBeenCalledWith("allowed-role-id");
+            });
+
+            it("許可されたロールを持たないユーザーを拒否する", async () => {
+                mockMember.roles.cache.has = mock(() => false);
+                const result = await (bot as any).checkUserPermission("user-without-role");
+                expect(result).toBe(false);
+            });
+
+            it("ギルドが見つからない場合は拒否する", async () => {
+                mockClient.guilds.cache.get = mock(() => null);
+                const result = await (bot as any).checkUserPermission("any-user");
+                expect(result).toBe(false);
+            });
+
+            it("メンバーが見つからない場合は拒否する", async () => {
+                mockGuild.members.fetch = mock(() => Promise.resolve(null));
+                const result = await (bot as any).checkUserPermission("nonexistent-user");
+                expect(result).toBe(false);
+            });
+
+            it("エラーが発生した場合は拒否する", async () => {
+                mockGuild.members.fetch = mock(() => Promise.reject(new Error("Fetch failed")));
+                const result = await (bot as any).checkUserPermission("error-user");
+                expect(result).toBe(false);
+            });
         });
     });
 });

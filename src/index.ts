@@ -11,12 +11,18 @@ async function main() {
         console.error(`[INFO] Discord Bot Token: ${maskEnv(env.DISCORD_BOT_TOKEN)}`);
         console.error(`[INFO] Discord Guild ID: ${env.DISCORD_GUILD_ID}`);
         console.error(`[INFO] Discord Text Channel ID: ${env.DISCORD_TEXT_CHANNEL_ID}`);
+        if (env.DISCORD_ALLOWED_ROLE_ID) {
+            console.error(`[INFO] Discord Allowed Role ID: ${env.DISCORD_ALLOWED_ROLE_ID}`);
+        } else {
+            console.error("[INFO] Discord Role-based Access Control: Disabled (all users allowed)");
+        }
 
         // Discord Bot の初期化
         const discordBot = new DiscordBot({
             token: env.DISCORD_BOT_TOKEN,
             guildId: env.DISCORD_GUILD_ID,
-            textChannelId: env.DISCORD_TEXT_CHANNEL_ID
+            textChannelId: env.DISCORD_TEXT_CHANNEL_ID,
+            allowedRoleId: env.DISCORD_ALLOWED_ROLE_ID
         });
 
         // Discord Bot を開始

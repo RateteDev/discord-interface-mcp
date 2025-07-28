@@ -29,13 +29,41 @@
 
 [docs/install-guide.md](./docs/install-guide.md) を参照。
 
+### 必要なBot権限
+
+Discord Botには以下の権限が必要です：
+
+- **Send Messages** - メッセージ送信
+- **Use Public Threads** - パブリックスレッドの使用  
+- **Create Public Threads** - パブリックスレッドの作成
+- **Read Message History** - メッセージ履歴の読み取り
+- **Add Reactions** - リアクションの追加
+- **View Server Members** - サーバーメンバーの表示（ロールベースアクセス制御使用時）
+
 ## 必要な認証情報
 
-| 環境変数                  | 説明                          |
-| ------------------------- | ----------------------------- |
-| `DISCORD_BOT_TOKEN`       | Discord Bot のトークン        |
-| `DISCORD_GUILD_ID`        | 使用するサーバー (Guild) ID   |
-| `DISCORD_TEXT_CHANNEL_ID` | メッセージ送信用チャンネル ID |
+| 環境変数                  | 説明                          | 必須 |
+| ------------------------- | ----------------------------- | ---- |
+| `DISCORD_BOT_TOKEN`       | Discord Bot のトークン        | ✅   |
+| `DISCORD_GUILD_ID`        | 使用するサーバー (Guild) ID   | ✅   |
+| `DISCORD_TEXT_CHANNEL_ID` | メッセージ送信用チャンネル ID | ✅   |
+| `DISCORD_ALLOWED_ROLE_ID` | アクセス制御用ロール ID       | ❌   |
+
+### セキュリティ設定
+
+**ロールベースアクセス制御**
+
+`DISCORD_ALLOWED_ROLE_ID` を設定することで、特定のロールを持つユーザーのみが **全ての** BOT操作を実行できるように制限できます。
+
+- **未設定** (デフォルト): 全ユーザーがBOTを利用可能
+- **設定済み**: 指定されたロールを持つユーザーのみがBOTの全機能を利用可能
+
+```bash
+# 例: 管理者ロールのみにアクセスを制限
+DISCORD_ALLOWED_ROLE_ID=1234567890123456789
+```
+
+> **注意**: この設定は機能ごとの制御ではなく、BOTの全操作に適用されます。ロールを持たないユーザーには適切なエラーメッセージが表示されます。
 
 ## MCP Tools
 

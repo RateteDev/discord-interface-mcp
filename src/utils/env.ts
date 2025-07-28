@@ -15,6 +15,7 @@ export const env = parseEnv(process.env, {
     DISCORD_RESPONSE_TIMEOUT_SECONDS: z.string().optional().transform(val => 
         val ? parseInt(val, 10) : undefined
     ),
+    DISCORD_ALLOWED_ROLE_ID: z.string().optional(),
 });
 
 /**
