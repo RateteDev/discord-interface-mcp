@@ -121,6 +121,24 @@ graph TB
 6. 成功/失敗レスポンスを MCP Client に返却
 ```
 
+### テキスト応答受信時の視覚的フィードバック
+
+```
+1. スレッドにテキスト応答待機メッセージを送信（青色Embed）
+   ↓
+2. messageIdとresolverをthreadResolversに保存
+   ↓
+3. ユーザーがスレッドに返信
+   ↓
+4. MessageCreateイベントをキャッチ
+   ↓
+5. 保存されたmessageIdを使用して元のEmbedを取得
+   ↓
+6. Embedの色を青→緑に変更、Footerを更新
+   ↓
+7. 応答をMCP Clientに返却
+```
+
 ### エラーハンドリングフロー
 
 ```

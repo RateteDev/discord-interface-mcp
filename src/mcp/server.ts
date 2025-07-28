@@ -20,6 +20,15 @@ import type {
     ThreadMessageTextResponse,
     ThreadMessageButtonResponse
 } from "../types/mcp";
+import { getStatusColor } from "../utils/color";
+import { t } from "../i18n";
+
+// Author情報の定数
+const AUTHOR_INFO = {
+    name: "discord-interface-mcp",
+    iconURL: "https://raw.githubusercontent.com/RateteDev/discord-interface-mcp/main/assets/icon.png",
+    url: "https://github.com/RateteDev/discord-interface-mcp"
+};
 
 /**
  * MCP サーバークラス
@@ -89,11 +98,6 @@ export class MCPServer {
                             description: {
                                 type: "string",
                                 description: "The description of the embed"
-                            },
-                            color: {
-                                type: "string",
-                                description: "The color of the embed (CSS basic 16 color names)",
-                                enum: ["black", "silver", "gray", "white", "maroon", "red", "purple", "fuchsia", "green", "lime", "olive", "yellow", "navy", "blue", "teal", "aqua"]
                             },
                             fields: {
                                 type: "array",
@@ -175,11 +179,6 @@ export class MCPServer {
                             description: {
                                 type: "string",
                                 description: "The description of the embed"
-                            },
-                            color: {
-                                type: "string",
-                                description: "The color of the embed (CSS basic 16 color names)",
-                                enum: ["black", "silver", "gray", "white", "maroon", "red", "purple", "fuchsia", "green", "lime", "olive", "yellow", "navy", "blue", "teal", "aqua"]
                             },
                             fields: {
                                 type: "array",
@@ -275,11 +274,20 @@ export class MCPServer {
                 description?: string;
                 color?: number;
                 fields?: Array<{ name: string; value: string; inline?: boolean }>;
-            } = {};
+                author?: { name: string; iconURL?: string; url?: string };
+                footer?: { text: string };
+                timestamp?: string;
+            } = {
+                // 常にAuthor情報を追加
+                author: AUTHOR_INFO,
+                // タイムスタンプを追加
+                timestamp: new Date().toISOString(),
+                // デフォルトで通常の色
+                color: getStatusColor("normal")
+            };
             
             if (validatedArgs.title) embed.title = validatedArgs.title;
             if (validatedArgs.description) embed.description = validatedArgs.description;
-            if (validatedArgs.color !== undefined) embed.color = validatedArgs.color;
             if (validatedArgs.fields) embed.fields = validatedArgs.fields;
 
             const result = await this.discordBot.sendTextChannelMessage({
@@ -325,11 +333,20 @@ export class MCPServer {
                 description?: string;
                 color?: number;
                 fields?: Array<{ name: string; value: string; inline?: boolean }>;
-            } = {};
+                author?: { name: string; iconURL?: string; url?: string };
+                footer?: { text: string };
+                timestamp?: string;
+            } = {
+                // 常にAuthor情報を追加
+                author: AUTHOR_INFO,
+                // タイムスタンプを追加
+                timestamp: new Date().toISOString(),
+                // デフォルトで通常の色
+                color: getStatusColor("normal")
+            };
             
             if (validatedArgs.initialMessage.title) embed.title = validatedArgs.initialMessage.title;
             if (validatedArgs.initialMessage.description) embed.description = validatedArgs.initialMessage.description;
-            if (validatedArgs.initialMessage.color !== undefined) embed.color = validatedArgs.initialMessage.color;
             if (validatedArgs.initialMessage.fields) embed.fields = validatedArgs.initialMessage.fields;
 
             const result = await this.discordBot.createThread(
@@ -377,27 +394,28 @@ export class MCPServer {
                 description?: string;
                 color?: number;
                 fields?: Array<{ name: string; value: string; inline?: boolean }>;
+                author?: { name: string; iconURL?: string; url?: string };
                 footer?: { text: string };
                 timestamp?: string;
-            } = {};
+            } = {
+                // 常にAuthor情報を追加
+                author: AUTHOR_INFO,
+                // タイムスタンプを追加
+                timestamp: new Date().toISOString()
+            };
             
             if (validatedArgs.title) embed.title = validatedArgs.title;
             if (validatedArgs.description) embed.description = validatedArgs.description;
             
             // 応答待ちの場合の装飾
             if (validatedArgs.waitForResponse) {
-                // 色が指定されていない場合は青色をデフォルトに
-                embed.color = validatedArgs.color !== undefined ? validatedArgs.color : 0x0099FF;
+                // 待機中の色
+                embed.color = getStatusColor("waiting");
                 
-                if (validatedArgs.waitForResponse.type === "text") {
-                    embed.footer = { text: "💬 返信をお待ちしています..." };
-                } else if (validatedArgs.waitForResponse.type === "button") {
-                    embed.footer = { text: "👆 選択してください" };
-                }
-                embed.timestamp = new Date().toISOString();
+                // Footerは設定しない（色のみで状態を表現）
             } else {
                 // 返信不要の場合は通常の色
-                if (validatedArgs.color !== undefined) embed.color = validatedArgs.color;
+                embed.color = getStatusColor("normal");
             }
             
             if (validatedArgs.fields) embed.fields = validatedArgs.fields;

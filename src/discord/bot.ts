@@ -11,6 +11,7 @@ import {
     type Message
 } from "discord.js";
 import type { Button as FeedbackButton } from "../types/mcp";
+import { t } from "../i18n";
 /**
  * Discord Bot の設定インターフェース
  */
@@ -39,6 +40,7 @@ export class DiscordBot {
         resolve: (value: { message: string; userId: string }) => void;
         timeout?: NodeJS.Timeout;
         timestamp: number;
+        messageId?: string;
     }> = new Map();
     private cleanupInterval?: NodeJS.Timeout;
     /**
@@ -90,11 +92,21 @@ export class DiscordBot {
             const resolver = this.threadResolvers.get(threadId);
             
             if (resolver) {
-                // メッセージを受信したことを示すリアクションを追加
-                try {
-                    await message.react('✅');
-                } catch (error) {
-                    console.error('[ERROR] Failed to add reaction:', error);
+                // Embedを更新（青→緑）
+                if (resolver.messageId) {
+                    try {
+                        const targetMessage = await message.channel.messages.fetch(resolver.messageId);
+                        if (targetMessage && targetMessage.embeds.length > 0) {
+                            const embed = targetMessage.embeds[0];
+                            const updatedEmbed = {
+                                ...embed.toJSON(),
+                                color: 0x00FF00 // 緑色に変更
+                            };
+                            await targetMessage.edit({ embeds: [updatedEmbed] });
+                        }
+                    } catch (error) {
+                        console.error("[ERROR] Failed to update embed:", error);
+                    }
                 }
                 
                 resolver.resolve({ 
@@ -216,20 +228,50 @@ export class DiscordBot {
             if (resolver) {
                 resolver.resolve({ response: value, userId: interaction.user.id });
                 
+                // Embedの色を緑に変更
+                const embed = interaction.message.embeds[0];
+                if (embed) {
+                    const updatedEmbed = {
+                        ...embed.toJSON(),
+                        color: 0x00FF00 // 緑色
+                    };
+                    
+                    // ボタンの色を更新（選択したものは緑、その他は赤）し、すべて無効化
+                    const row = interaction.message.components[0];
+                    if (row) {
+                        const updatedButtons = row.components.map((button: any) => {
+                            const isSelected = button.customId.includes(`:${value}:`);
+                            return new ButtonBuilder()
+                                .setCustomId(button.customId)
+                                .setLabel(button.label)
+                                .setStyle(isSelected ? ButtonStyle.Success : ButtonStyle.Danger)
+                                .setDisabled(true);
+                        });
+                        
+                        const updatedRow = new ActionRowBuilder<ButtonBuilder>()
+                            .addComponents(updatedButtons);
+                        
+                        await interaction.message.edit({
+                            embeds: [updatedEmbed],
+                            components: [updatedRow]
+                        });
+                    }
+                }
+                
                 await interaction.reply({
-                    content: `✅ You Selected: **${value}**`,
+                    content: `${t("you_selected")}: **${value}**`,
                     ephemeral: true
                 });
             } else {
                 await interaction.reply({
-                    content: '❌ This feedback session has expired.',
+                    content: t("session_expired"),
                     ephemeral: true
                 });
             }
         } catch (error) {
             console.error("[ERROR] Error handling feedback interaction:", error);
             await interaction.reply({
-                content: 'An error occurred while processing your feedback.',
+                content: t("error_processing_feedback"),
                 ephemeral: true
             }).catch(() => {});
         }
@@ -382,7 +424,8 @@ export class DiscordBot {
                         });
                     },
                     timeout: timeoutHandle,
-                    timestamp: Date.now()
+                    timestamp: Date.now(),
+                    messageId: messageId
                 });
             });
         }

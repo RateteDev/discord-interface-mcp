@@ -1,6 +1,7 @@
 import { env, maskEnv } from "./utils/env";
 import { DiscordBot } from "./discord/bot";
 import { MCPServer } from "./mcp/server";
+import { initializeI18n } from "./i18n";
 
 /**
  * アプリケーションのメインエントリポイント
@@ -8,6 +9,11 @@ import { MCPServer } from "./mcp/server";
 async function main() {
     try {
         console.error("[INFO] Discord Interface MCP starting...");
+        
+        // i18nシステムを初期化
+        initializeI18n();
+        console.error(`[INFO] Locale: ${env.DISCORD_LOCALE}`);
+        
         console.error(`[INFO] Discord Bot Token: ${maskEnv(env.DISCORD_BOT_TOKEN)}`);
         console.error(`[INFO] Discord Guild ID: ${env.DISCORD_GUILD_ID}`);
         console.error(`[INFO] Discord Text Channel ID: ${env.DISCORD_TEXT_CHANNEL_ID}`);
