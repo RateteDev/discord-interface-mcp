@@ -402,7 +402,7 @@ export class MCPServer {
             
             if (validatedArgs.fields) embed.fields = validatedArgs.fields;
 
-            const timeoutSeconds = env.DISCORD_FEEDBACK_TIMEOUT_SECONDS;
+            const timeoutSeconds = env.DISCORD_RESPONSE_TIMEOUT_SECONDS;
             const timeoutMs = timeoutSeconds ? timeoutSeconds * 1000 : undefined;
 
             const result = await this.discordBot.sendThreadMessage(
