@@ -280,8 +280,7 @@ export class MCPServer {
             } = {
                 // 常にAuthor情報を追加
                 author: AUTHOR_INFO,
-                // 常にFooterとタイムスタンプを追加
-                footer: { text: t("message_sent") },
+                // タイムスタンプを追加
                 timestamp: new Date().toISOString(),
                 // デフォルトで通常の色
                 color: getStatusColor("normal")
@@ -340,8 +339,7 @@ export class MCPServer {
             } = {
                 // 常にAuthor情報を追加
                 author: AUTHOR_INFO,
-                // 常にFooterとタイムスタンプを追加
-                footer: { text: t("message_sent") },
+                // タイムスタンプを追加
                 timestamp: new Date().toISOString(),
                 // デフォルトで通常の色
                 color: getStatusColor("normal")
@@ -414,15 +412,10 @@ export class MCPServer {
                 // 待機中の色
                 embed.color = getStatusColor("waiting");
                 
-                if (validatedArgs.waitForResponse.type === "text") {
-                    embed.footer = { text: t("waiting_for_response") };
-                } else if (validatedArgs.waitForResponse.type === "button") {
-                    embed.footer = { text: t("select_option") };
-                }
+                // Footerは設定しない（色のみで状態を表現）
             } else {
-                // 返信不要の場合は通常の色とメッセージ
+                // 返信不要の場合は通常の色
                 embed.color = getStatusColor("normal");
-                embed.footer = { text: t("message_sent") };
             }
             
             if (validatedArgs.fields) embed.fields = validatedArgs.fields;

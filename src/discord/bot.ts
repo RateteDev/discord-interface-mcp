@@ -92,6 +92,23 @@ export class DiscordBot {
             const resolver = this.threadResolvers.get(threadId);
             
             if (resolver) {
+                // Embedを更新（青→緑）
+                if (resolver.messageId) {
+                    try {
+                        const targetMessage = await message.channel.messages.fetch(resolver.messageId);
+                        if (targetMessage && targetMessage.embeds.length > 0) {
+                            const embed = targetMessage.embeds[0];
+                            const updatedEmbed = {
+                                ...embed.toJSON(),
+                                color: 0x00FF00 // 緑色に変更
+                            };
+                            await targetMessage.edit({ embeds: [updatedEmbed] });
+                        }
+                    } catch (error) {
+                        console.error("[ERROR] Failed to update embed:", error);
+                    }
+                }
+                
                 resolver.resolve({ 
                     message: message.content, 
                     userId: message.author.id 
@@ -410,7 +427,8 @@ export class DiscordBot {
                         });
                     },
                     timeout: timeoutHandle,
-                    timestamp: Date.now()
+                    timestamp: Date.now(),
+                    messageId: messageId
                 });
             });
         }
