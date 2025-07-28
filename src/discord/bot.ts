@@ -222,10 +222,26 @@ export class DiscordBot {
                         }
                     };
                     
-                    await interaction.message.edit({
-                        embeds: [updatedEmbed],
-                        components: [] // ボタンを削除
-                    });
+                    // ボタンの色を更新（選択したものは緑、その他は赤）し、すべて無効化
+                    const row = interaction.message.components[0];
+                    if (row) {
+                        const updatedButtons = row.components.map((button: any) => {
+                            const isSelected = button.customId.includes(`:${value}:`);
+                            return new ButtonBuilder()
+                                .setCustomId(button.customId)
+                                .setLabel(button.label)
+                                .setStyle(isSelected ? ButtonStyle.Success : ButtonStyle.Danger)
+                                .setDisabled(true);
+                        });
+                        
+                        const updatedRow = new ActionRowBuilder<ButtonBuilder>()
+                            .addComponents(updatedButtons);
+                        
+                        await interaction.message.edit({
+                            embeds: [updatedEmbed],
+                            components: [updatedRow]
+                        });
+                    }
                 }
                 
                 await interaction.reply({
