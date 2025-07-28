@@ -137,11 +137,6 @@ export class MCPServer {
                                         type: "string",
                                         description: "The description of the initial message embed"
                                     },
-                                    color: {
-                                        type: "string",
-                                        description: "The color of the embed (CSS basic 16 color names)",
-                                        enum: ["black", "silver", "gray", "white", "maroon", "red", "purple", "fuchsia", "green", "lime", "olive", "yellow", "navy", "blue", "teal", "aqua"]
-                                    },
                                     fields: {
                                         type: "array",
                                         items: {

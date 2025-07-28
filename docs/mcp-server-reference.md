@@ -14,7 +14,6 @@ Discord Interface MCPが提供するMCPツールの詳細な仕様とインタ�
 | --------------- | ------- | ---- | ----------------------------------- |
 | title           | string  | ❌    | Embedのタイトル                     |
 | description     | string  | ❌    | Embedの説明文                       |
-| color           | string  | ❌    | Embedの色（CSS基本16色名のみ）      |
 | fields          | Array   | ❌    | フィールドの配列                    |
 | fields[].name   | string  | ✅*   | フィールド名                        |
 | fields[].value  | string  | ✅*   | フィールド値                        |
@@ -28,8 +27,7 @@ Discord Interface MCPが提供するMCPツールの詳細な仕様とインタ�
 ```json
 {
   "title": "✅ デプロイ完了",
-  "description": "v2.0.0がリリースされました",
-  "color": "green"
+  "description": "v2.0.0がリリースされました"
 }
 ```
 
@@ -38,7 +36,6 @@ Discord Interface MCPが提供するMCPツールの詳細な仕様とインタ�
 {
   "title": "📊 日次レポート",
   "description": "本日の統計情報",
-  "color": "blue",
   "fields": [
     {"name": "アクティブユーザー", "value": "1,234", "inline": true},
     {"name": "新規登録", "value": "56", "inline": true},
@@ -59,7 +56,6 @@ Discord Interface MCPが提供するMCPツールの詳細な仕様とインタ�
 | initialMessage             | object | ✅    | 初期メッセージ                 |
 | initialMessage.title       | string | ❌    | Embedのタイトル                |
 | initialMessage.description | string | ❌    | Embedの説明文                  |
-| initialMessage.color       | string | ❌    | Embedの色（CSS基本16色名のみ） |
 | initialMessage.fields      | Array  | ❌    | フィールドの配列               |
 
 #### 使用例
@@ -69,8 +65,7 @@ Discord Interface MCPが提供するMCPツールの詳細な仕様とインタ�
   "threadName": "リリース確認-v2.0.0",
   "initialMessage": {
     "title": "🚀 リリース準備完了",
-    "description": "本番環境にデプロイしてよろしいですか？",
-    "color": "yellow"
+    "description": "本番環境にデプロイしてよろしいですか？"
   }
 }
 ```
@@ -98,7 +93,6 @@ Discord Interface MCPが提供するMCPツールの詳細な仕様とインタ�
 | threadId                        | string | ✅    | 送信先スレッドID                    |
 | title                           | string | ❌    | Embedのタイトル                     |
 | description                     | string | ❌    | Embedの説明文                       |
-| color                           | string | ❌    | Embedの色（CSS基本16色名のみ）      |
 | fields                          | Array  | ❌    | フィールドの配列                    |
 | waitForResponse                 | object | ❌    | 応答待機設定                        |
 | waitForResponse.type            | string | ✅*   | 応答タイプ ("text" または "button") |
@@ -116,8 +110,7 @@ Discord Interface MCPが提供するMCPツールの詳細な仕様とインタ�
 {
   "threadId": "1399000000000000001",
   "title": "✅ 処理完了",
-  "description": "データベースの更新が完了しました",
-  "color": "green"
+  "description": "データベースの更新が完了しました"
 }
 ```
 
