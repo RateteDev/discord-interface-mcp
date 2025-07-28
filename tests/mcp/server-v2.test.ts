@@ -11,7 +11,7 @@ import type {
     SendThreadMessageResponse,
     ThreadMessageTextResponse,
     ThreadMessageButtonResponse
-} from "../../src/types/mcp-v2";
+} from "../../src/types/mcp";
 
 describe("MCPServer v2 API", () => {
     let mcpServer: MCPServer;

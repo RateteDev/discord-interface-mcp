@@ -10,7 +10,7 @@ import {
     type ButtonInteraction,
     type Message
 } from "discord.js";
-import type { FeedbackButton } from "../types/mcp-v2";
+import type { Button as FeedbackButton } from "../types/mcp";
 /**
  * Discord Bot の設定インターフェース
  */
@@ -405,6 +405,8 @@ export class DiscordBot {
             };
             const message = await thread.send(messageOptions);
             const messageId = message.id;
+            
+            // 🔧 FIX: Promiseを作成してからresolverを即座に登録
             return new Promise((resolve) => {
                 const timeoutHandle = timeout ? setTimeout(() => {
                     this.feedbackResolvers.delete(messageId);
@@ -420,6 +422,8 @@ export class DiscordBot {
                         }
                     });
                 }, timeout) : undefined;
+                
+                // 🔧 FIX: メッセージ送信直後にresolverを登録してタイミング競合を回避
                 this.feedbackResolvers.set(messageId, {
                     resolve: (value) => {
                         if (timeoutHandle) clearTimeout(timeoutHandle);
