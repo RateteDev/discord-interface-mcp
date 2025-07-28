@@ -12,5 +12,7 @@ export const ja: Messages = {
   error_occurred: "❌ エラーが発生しました",
   session_expired: "❌ このフィードバックセッションは期限切れです。",
   you_selected: "✅ 選択しました",
-  error_processing_feedback: "フィードバックの処理中にエラーが発生しました。"
+  error_processing_feedback: "フィードバックの処理中にエラーが発生しました。",
+  ty_for_reply: "返信ありがとうございます❤️",
+  selected: "選択済み"
 };

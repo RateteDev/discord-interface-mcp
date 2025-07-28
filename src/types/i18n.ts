@@ -19,7 +19,9 @@ export type MessageKey =
   | "error_occurred"
   | "session_expired"
   | "you_selected"
-  | "error_processing_feedback";
+  | "error_processing_feedback"
+  | "ty_for_reply"
+  | "selected";
 
 /**
  * メッセージ定義の型

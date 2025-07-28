@@ -19,12 +19,12 @@ describe("color utilities", () => {
       expect(getStatusColor("error")).toBe(0xFF0000);
     });
 
-    it("should return gray for normal status", () => {
-      expect(getStatusColor("normal")).toBe(0x808080);
+    it("should return Claude orange for normal status", () => {
+      expect(getStatusColor("normal")).toBe(0xF5682A);
     });
 
-    it("should return gray for default/undefined status", () => {
-      expect(getStatusColor()).toBe(0x808080);
+    it("should return Claude orange for default/undefined status", () => {
+      expect(getStatusColor()).toBe(0xF5682A);
     });
   });
 

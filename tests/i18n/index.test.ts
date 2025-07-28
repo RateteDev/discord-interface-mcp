@@ -64,6 +64,14 @@ describe("i18n system", () => {
       it("should return English error processing feedback", () => {
         expect(t("error_processing_feedback")).toBe("An error occurred while processing your feedback.");
       });
+
+      it("should return English ty for reply message", () => {
+        expect(t("ty_for_reply")).toBe("ty for reply❤️");
+      });
+
+      it("should return English selected message", () => {
+        expect(t("selected")).toBe("selected");
+      });
     });
 
     describe("Japanese messages", () => {
@@ -105,6 +113,14 @@ describe("i18n system", () => {
 
       it("should return Japanese error processing feedback", () => {
         expect(t("error_processing_feedback")).toBe("フィードバックの処理中にエラーが発生しました。");
+      });
+
+      it("should return Japanese ty for reply message", () => {
+        expect(t("ty_for_reply")).toBe("返信ありがとうございます❤️");
+      });
+
+      it("should return Japanese selected message", () => {
+        expect(t("selected")).toBe("選択済み");
       });
     });
   });

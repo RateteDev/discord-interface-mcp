@@ -13,7 +13,7 @@ const STATUS_COLORS: Record<StatusType, number> = {
     success: 0x00FF00,    // 緑
     completed: 0x00FF00,  // 緑
     error: 0xFF0000,      // 赤
-    normal: 0x808080      // グレー
+    normal: 0xF5682A      // Claudeオレンジ
 };
 
 /**

@@ -40,6 +40,7 @@ export class DiscordBot {
         resolve: (value: { message: string; userId: string }) => void;
         timeout?: NodeJS.Timeout;
         timestamp: number;
+        messageId?: string;
     }> = new Map();
     private cleanupInterval?: NodeJS.Timeout;
     /**
@@ -91,13 +92,6 @@ export class DiscordBot {
             const resolver = this.threadResolvers.get(threadId);
             
             if (resolver) {
-                // メッセージを受信したことを示すリアクションを追加
-                try {
-                    await message.react('✅');
-                } catch (error) {
-                    console.error('[ERROR] Failed to add reaction:', error);
-                }
-                
                 resolver.resolve({ 
                     message: message.content, 
                     userId: message.author.id 
@@ -216,6 +210,23 @@ export class DiscordBot {
             const resolver = this.feedbackResolvers.get(interaction.message.id);
             if (resolver) {
                 resolver.resolve({ response: value, userId: interaction.user.id });
+                
+                // Embedの色を緑に変更し、Footerを更新
+                const embed = interaction.message.embeds[0];
+                if (embed) {
+                    const updatedEmbed = {
+                        ...embed.toJSON(),
+                        color: 0x00FF00, // 緑色
+                        footer: {
+                            text: `${t("selected")} ${value}`
+                        }
+                    };
+                    
+                    await interaction.message.edit({
+                        embeds: [updatedEmbed],
+                        components: [] // ボタンを削除
+                    });
+                }
                 
                 await interaction.reply({
                     content: `${t("you_selected")}: **${value}**`,

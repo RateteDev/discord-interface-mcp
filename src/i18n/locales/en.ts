@@ -12,5 +12,7 @@ export const en: Messages = {
   error_occurred: "❌ An error occurred",
   session_expired: "❌ This feedback session has expired.",
   you_selected: "✅ You Selected",
-  error_processing_feedback: "An error occurred while processing your feedback."
+  error_processing_feedback: "An error occurred while processing your feedback.",
+  ty_for_reply: "ty for reply❤️",
+  selected: "selected"
 };

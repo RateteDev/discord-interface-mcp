@@ -17,9 +17,11 @@ describe("i18n types", () => {
       "error_occurred",
       "session_expired",
       "you_selected",
-      "error_processing_feedback"
+      "error_processing_feedback",
+      "ty_for_reply",
+      "selected"
     ];
-    expect(messageKeys).toHaveLength(9);
+    expect(messageKeys).toHaveLength(11);
   });
 
   it("should type Messages correctly", () => {
@@ -32,9 +34,11 @@ describe("i18n types", () => {
       error_occurred: "test",
       session_expired: "test",
       you_selected: "test",
-      error_processing_feedback: "test"
+      error_processing_feedback: "test",
+      ty_for_reply: "test",
+      selected: "test"
     };
-    expect(Object.keys(messages)).toHaveLength(9);
+    expect(Object.keys(messages)).toHaveLength(11);
   });
 
   it("should type LocaleMessages correctly", () => {
@@ -48,7 +52,9 @@ describe("i18n types", () => {
         error_occurred: "テスト",
         session_expired: "テスト",
         you_selected: "テスト",
-        error_processing_feedback: "テスト"
+        error_processing_feedback: "テスト",
+        ty_for_reply: "テスト",
+        selected: "テスト"
       },
       en: {
         waiting_for_response: "test",
@@ -59,7 +65,9 @@ describe("i18n types", () => {
         error_occurred: "test",
         session_expired: "test",
         you_selected: "test",
-        error_processing_feedback: "test"
+        error_processing_feedback: "test",
+        ty_for_reply: "test",
+        selected: "test"
       }
     };
     expect(Object.keys(localeMessages)).toHaveLength(2);
