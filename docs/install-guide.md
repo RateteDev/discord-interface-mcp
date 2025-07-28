@@ -70,7 +70,7 @@ Claude Desktopの設定ファイルを開きます：
         "DISCORD_BOT_TOKEN": "YOUR_BOT_TOKEN_HERE",
         "DISCORD_GUILD_ID": "YOUR_GUILD_ID_HERE",
         "DISCORD_TEXT_CHANNEL_ID": "YOUR_CHANNEL_ID_HERE",
-        "DISCORD_FEEDBACK_TIMEOUT_SECONDS": "30" // optional: フィードバックタイムアウト（デフォルトはタイムアウト無し）
+        "DISCORD_RESPONSE_TIMEOUT_SECONDS": "30" // optional: 応答タイムアウト（デフォルトはタイムアウト無し）
       }
     }
   }
@@ -101,7 +101,7 @@ claude mcp add discord-interface npx discord-interface-mcp \
   -e DISCORD_BOT_TOKEN="YOUR_BOT_TOKEN_HERE" \
   -e DISCORD_GUILD_ID="YOUR_GUILD_ID_HERE" \
   -e DISCORD_TEXT_CHANNEL_ID="YOUR_CHANNEL_ID_HERE" \
-  -e DISCORD_FEEDBACK_TIMEOUT_SECONDS="30" # optional
+  -e DISCORD_RESPONSE_TIMEOUT_SECONDS="30" # optional
 ```
 
 **PowerShell (Windows):**
@@ -110,7 +110,7 @@ claude mcp add discord-interface cmd /c npx discord-interface-mcp `
   -e DISCORD_BOT_TOKEN="YOUR_BOT_TOKEN_HERE" `
   -e DISCORD_GUILD_ID="YOUR_GUILD_ID_HERE" `
   -e DISCORD_TEXT_CHANNEL_ID="YOUR_CHANNEL_ID_HERE" `
-  -e DISCORD_FEEDBACK_TIMEOUT_SECONDS="30" # optional
+  -e DISCORD_RESPONSE_TIMEOUT_SECONDS="30" # optional
 ```
 
 > **注意**: `YOUR_*_HERE`の部分を実際の値に置き換えてください
