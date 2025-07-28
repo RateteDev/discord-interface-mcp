@@ -12,14 +12,14 @@ import {
     SendTextChannelMessageArgsSchema,
     CreateThreadArgsSchema,
     SendThreadMessageArgsSchema
-} from "../validation/schemas-v2";
+} from "../validation/schemas";
 import type {
     TextChannelMessageResponse,
     CreateThreadResponse,
     SendThreadMessageResponse,
     ThreadMessageTextResponse,
     ThreadMessageButtonResponse
-} from "../types/mcp-v2";
+} from "../types/mcp";
 
 /**
  * MCP サーバークラス

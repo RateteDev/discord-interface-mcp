@@ -1,5 +1,8 @@
 import { z } from "zod";
-import { ColorNameSchema, colorNameToHex } from "../utils/color";
+import { ColorNameSchema, colorNameToHex, type ColorName } from "../utils/color";
+
+// ColorNameを再export
+export type { ColorName };
 
 /**
  * Embedフィールドのスキーマ
