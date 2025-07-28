@@ -1,8 +1,4 @@
 import { z } from "zod";
-import { ColorNameSchema, colorNameToHex, type ColorName } from "../utils/color";
-
-// ColorNameを再export
-export type { ColorName };
 
 /**
  * Embedフィールドのスキーマ
@@ -31,9 +27,6 @@ export const ButtonSchema = z.object({
 export const SendTextChannelMessageArgsSchema = z.object({
     title: z.string().optional(),
     description: z.string().optional(),
-    color: ColorNameSchema.optional().transform((colorName) => 
-        colorName ? colorNameToHex(colorName) : undefined
-    ),
     fields: z.array(FieldSchema).optional()
 });
 
@@ -47,9 +40,6 @@ export const CreateThreadArgsSchema = z.object({
     initialMessage: z.object({
         title: z.string().optional(),
         description: z.string().optional(),
-        color: ColorNameSchema.optional().transform((colorName) => 
-            colorName ? colorNameToHex(colorName) : undefined
-        ),
         fields: z.array(FieldSchema).optional()
     })
 });
@@ -61,9 +51,6 @@ export const SendThreadMessageArgsSchema = z.object({
     threadId: z.string(),
     title: z.string().optional(),
     description: z.string().optional(),
-    color: ColorNameSchema.optional().transform((colorName) => 
-        colorName ? colorNameToHex(colorName) : undefined
-    ),
     fields: z.array(FieldSchema).optional(),
     waitForResponse: z.object({
         type: z.enum(["text", "button"]),

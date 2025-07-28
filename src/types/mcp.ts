@@ -2,8 +2,6 @@
  * MCP v2 API の型定義
  */
 
-import type { ColorName } from "../validation/schemas";
-
 /**
  * Embedフィールド
  */
@@ -27,7 +25,6 @@ export interface Button {
 export interface SendTextChannelMessageArgs {
     title?: string;
     description?: string;
-    color?: ColorName;
     fields?: Field[];
 }
 
@@ -39,7 +36,6 @@ export interface CreateThreadArgs {
     initialMessage: {
         title?: string;
         description?: string;
-        color?: ColorName;
         fields?: Field[];
     };
 }
@@ -51,7 +47,6 @@ export interface SendThreadMessageArgs {
     threadId: string;
     title?: string;
     description?: string;
-    color?: ColorName;
     fields?: Field[];
     waitForResponse?: {
         type: "text" | "button";

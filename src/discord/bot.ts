@@ -11,6 +11,7 @@ import {
     type Message
 } from "discord.js";
 import type { Button as FeedbackButton } from "../types/mcp";
+import { t } from "../i18n";
 /**
  * Discord Bot の設定インターフェース
  */
@@ -217,19 +218,19 @@ export class DiscordBot {
                 resolver.resolve({ response: value, userId: interaction.user.id });
                 
                 await interaction.reply({
-                    content: `✅ You Selected: **${value}**`,
+                    content: `${t("you_selected")}: **${value}**`,
                     ephemeral: true
                 });
             } else {
                 await interaction.reply({
-                    content: '❌ This feedback session has expired.',
+                    content: t("session_expired"),
                     ephemeral: true
                 });
             }
         } catch (error) {
             console.error("[ERROR] Error handling feedback interaction:", error);
             await interaction.reply({
-                content: 'An error occurred while processing your feedback.',
+                content: t("error_processing_feedback"),
                 ephemeral: true
             }).catch(() => {});
         }

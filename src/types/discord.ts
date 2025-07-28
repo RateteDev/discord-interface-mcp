@@ -25,6 +25,12 @@ export interface DiscordEmbedOptions {
         value: string;
         inline?: boolean;
     }>;
+    /** Author情報 */
+    author?: {
+        name: string;
+        iconURL?: string;
+        url?: string;
+    };
     /** フッター */
     footer?: {
         text: string;
