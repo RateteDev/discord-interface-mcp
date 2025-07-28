@@ -228,15 +228,12 @@ export class DiscordBot {
             if (resolver) {
                 resolver.resolve({ response: value, userId: interaction.user.id });
                 
-                // Embedの色を緑に変更し、Footerを更新
+                // Embedの色を緑に変更
                 const embed = interaction.message.embeds[0];
                 if (embed) {
                     const updatedEmbed = {
                         ...embed.toJSON(),
-                        color: 0x00FF00, // 緑色
-                        footer: {
-                            text: `${t("selected")} ${value}`
-                        }
+                        color: 0x00FF00 // 緑色
                     };
                     
                     // ボタンの色を更新（選択したものは緑、その他は赤）し、すべて無効化
