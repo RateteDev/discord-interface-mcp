@@ -106,11 +106,13 @@ export class DiscordBot {
             );
             if (targetMessage && targetMessage.embeds.length > 0) {
               const embed = targetMessage.embeds[0];
-              const updatedEmbed = {
-                ...embed.toJSON(),
-                color: 0x00ff00, // 緑色に変更
-              };
-              await targetMessage.edit({ embeds: [updatedEmbed] });
+              if (embed) {
+                const updatedEmbed = {
+                  ...embed.toJSON(),
+                  color: 0x00ff00, // 緑色に変更
+                };
+                await targetMessage.edit({ embeds: [updatedEmbed] });
+              }
             }
           } catch (error) {
             console.error('[ERROR] Failed to update embed:', error);
@@ -248,7 +250,7 @@ export class DiscordBot {
 
           // ボタンの色を更新（選択したものは緑、その他は赤）し、すべて無効化
           const row = interaction.message.components[0];
-          if (row) {
+          if (row && 'components' in row) {
             const updatedButtons = row.components.map((button: any) => {
               const isSelected = button.customId.includes(`:${value}:`);
               return new ButtonBuilder()
