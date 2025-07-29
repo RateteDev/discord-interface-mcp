@@ -82,3 +82,10 @@ export const SendThreadMessageArgsSchema = z
       path: ['waitForResponse', 'buttons'],
     }
   );
+
+/**
+ * get_threads引数のスキーマ
+ */
+export const GetThreadsArgsSchema = z.object({
+  filter: z.enum(['all', 'active', 'archived']).optional(),
+});
