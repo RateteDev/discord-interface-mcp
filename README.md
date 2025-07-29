@@ -75,4 +75,4 @@ discord-interface-mcp/
 
 ## ライセンス
 
-GPL-3.0 © 2025 Discord Interface MCP Contributors
+[GPL-3.0](https://www.gnu.org/licenses/gpl-3.0.ja.html#license-text)
