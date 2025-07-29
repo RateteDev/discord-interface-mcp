@@ -68,7 +68,7 @@ discord-interface-mcp/
 
 ## 技術スタック
 
-* **TypeScript**
+* **[TypeScript](https://github.com/microsoft/TypeScript)**
 * **[Bun](https://bun.sh/)**
 * **[discord.js](https://discord.js.org/)**
 * **[@modelcontextprotocol/sdk](https://www.npmjs.com/package/@modelcontextprotocol/sdk)**
