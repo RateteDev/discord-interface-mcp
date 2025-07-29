@@ -1,0 +1,117 @@
+# 継続的デプロイメント（CD）ワークフロー
+# mainブランチへのプッシュ時にリリース処理を実行
+name: CD
+
+on:
+    push:
+        branches:
+            - main
+
+jobs:
+    publish:
+        runs-on: ubuntu-latest
+        steps:
+            # ソースコードのチェックアウト
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            # Node.jsの環境セットアップ（npm publish用）
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "20"
+                  registry-url: "https://registry.npmjs.org"
+
+            # Bunの環境セットアップ
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: latest
+
+            # 依存関係のインストール
+            - name: Install dependencies
+              run: bun install
+
+            # プロジェクトのビルド実行
+            - name: Build
+              run: bun run build
+
+            # バージョン変更チェック（npmに公開済みのバージョンと比較）
+            - name: Check if version changed
+              id: version-check
+              run: |
+                  CURRENT_VERSION=$(node -p "require('./package.json').version")
+                  PUBLISHED_VERSION=$(npm view discord-interface-mcp version 2>/dev/null || echo "0.0.0")
+                  echo "Current version: $CURRENT_VERSION"
+                  echo "Published version: $PUBLISHED_VERSION"
+                  echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+                  echo "previous_version=$PUBLISHED_VERSION" >> $GITHUB_OUTPUT
+                  if [ "$CURRENT_VERSION" != "$PUBLISHED_VERSION" ]; then
+                    echo "should_publish=true" >> $GITHUB_OUTPUT
+                    echo "Version changed, will publish"
+                  else
+                    echo "should_publish=false" >> $GITHUB_OUTPUT
+                    echo "Version unchanged, skipping publish"
+                  fi
+
+            # npmへのパッケージ公開
+            - name: Publish to npm
+              if: steps.version-check.outputs.should_publish == 'true'
+              run: npm publish --access public
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            # Gitリリースタグの作成
+            - name: Create release tag
+              if: steps.version-check.outputs.should_publish == 'true'
+              run: |
+                  VERSION=$(node -p "require('./package.json').version")
+                  git config --local user.email "action@github.com"
+                  git config --local user.name "GitHub Action"
+                  git tag "v$VERSION"
+                  git push origin "v$VERSION"
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            # DXT CLIのインストール（Claude Desktop拡張パッケージ作成用）
+            - name: Install DXT CLI
+              if: steps.version-check.outputs.should_publish == 'true'
+              run: npm install -g @anthropic-ai/dxt
+
+            # DXTパッケージのビルド
+            - name: Build DXT package
+              if: steps.version-check.outputs.should_publish == 'true'
+              run: |
+                  dxt pack
+                  VERSION=$(node -p "require('./package.json').version")
+                  mv "discord-interface-mcp.dxt" "discord-interface-mcp-${VERSION}.dxt"
+
+            # GitHubリリースの作成（DXTファイル添付）
+            - name: Create GitHub Release
+              if: steps.version-check.outputs.should_publish == 'true'
+              uses: softprops/action-gh-release@v1
+              with:
+                  tag_name: v${{ steps.version-check.outputs.version }}
+                  name: v${{ steps.version-check.outputs.version }}
+                  draft: false
+                  prerelease: false
+                  files: |
+                      discord-interface-mcp-*.dxt
+                  body: |
+                      ## 🚀 Discord Interface MCP v${{ steps.version-check.outputs.version }}
+
+                      ### 📦 インストール方法
+
+                      #### One-click インストール (DXT)
+                      1. [discord-interface-mcp-${{ steps.version-check.outputs.version }}.dxt](https://github.com/${{ github.repository }}/releases/download/v${{ steps.version-check.outputs.version }}/discord-interface-mcp-${{ steps.version-check.outputs.version }}.dxt) をダウンロード
+                      2. Claude Desktop > Settings > MCP Servers > Add Extension (.dxt)
+                      3. ダウンロードしたファイルを選択
+                      4. 必要な設定を入力
+
+                      ### 📝 変更内容
+                      [完全な変更履歴を見る](https://github.com/${{ github.repository }}/compare/v${{ steps.version-check.outputs.previous_version }}...v${{ steps.version-check.outputs.version }})
+
+                      ---
+                      🤖 Generated with [Claude Code](https://claude.ai/code)
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
