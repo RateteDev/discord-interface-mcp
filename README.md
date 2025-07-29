@@ -42,7 +42,7 @@
 | `DISCORD_LOCALE`          | メッセージ言語 (ja/en)        | ❌   | en           |
 | `DISCORD_RESPONSE_TIMEOUT_SECONDS` | 応答待機タイムアウト（秒） | ❌   | -            |
 
-[.env.exanple](./.env.exanple) を参照。
+[.env.example](./.env.example) を参照。
 
 ## MCP Tools
 
