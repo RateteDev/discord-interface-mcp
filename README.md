@@ -42,6 +42,8 @@
 | `DISCORD_LOCALE`          | メッセージ言語 (ja/en)        | ❌   | en           |
 | `DISCORD_RESPONSE_TIMEOUT_SECONDS` | 応答待機タイムアウト（秒） | ❌   | -            |
 
+[.env.example](./.env.example) を参照。
+
 ## MCP Tools
 
 | コマンド                 | 説明                                                   |
@@ -68,11 +70,11 @@ discord-interface-mcp/
 
 ## 技術スタック
 
-* **TypeScript**
+* **[TypeScript](https://github.com/microsoft/TypeScript)**
 * **[Bun](https://bun.sh/)**
 * **[discord.js](https://discord.js.org/)**
 * **[@modelcontextprotocol/sdk](https://www.npmjs.com/package/@modelcontextprotocol/sdk)**
 
 ## ライセンス
 
-GPL-3.0 © 2025 Discord Interface MCP Contributors
+[GPL-3.0](https://www.gnu.org/licenses/gpl-3.0.ja.html#license-text)
