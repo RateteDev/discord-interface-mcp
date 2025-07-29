@@ -54,3 +54,7 @@ logs/
 
 # Actual config with tokens
 docs/claude-desktop-config-actual.json
+
+# Build artifacts
+*.dxt
+discord-interface-mcp-*.dxt
