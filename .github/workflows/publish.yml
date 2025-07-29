@@ -26,6 +26,20 @@ jobs:
             - name: Build
               run: bun run build
 
+            - name: Check version consistency
+              run: |
+                  PACKAGE_VERSION=$(node -p "require('./package.json').version")
+                  MANIFEST_VERSION=$(node -p "require('./manifest.json').version")
+                  echo "package.json version: $PACKAGE_VERSION"
+                  echo "manifest.json version: $MANIFEST_VERSION"
+                  if [ "$PACKAGE_VERSION" != "$MANIFEST_VERSION" ]; then
+                    echo "❌ Error: Version mismatch between package.json ($PACKAGE_VERSION) and manifest.json ($MANIFEST_VERSION)"
+                    echo "Please ensure both files have the same version number."
+                    exit 1
+                  else
+                    echo "✅ Version consistency check passed: $PACKAGE_VERSION"
+                  fi
+
             - name: Run tests
               run: bun test
               env:

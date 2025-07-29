@@ -11,14 +11,15 @@
 mainブランチへプッシュされると、**常に**以下の処理が実行されます：
 
 1. **ビルド&テスト**: コードの品質確認
-2. **バージョンチェック**: `package.json`のバージョンと既公開版を比較
+2. **バージョン一致チェック**: `package.json`と`manifest.json`のバージョンが一致することを確認
+3. **バージョンチェック**: `package.json`のバージョンと既公開版を比較
 
 **バージョンが変更されている場合のみ**、以下が追加実行されます：
 
-3. **npm公開**: 新しいバージョンをnpmレジストリに公開
-4. **タグ作成**: `v{version}`形式でGitタグを自動作成
-5. **DXTパッケージビルド**: Desktop Extensions形式のパッケージを生成
-6. **GitHub Release作成**: リリースノートとDXTファイルを含む自動リリース
+4. **npm公開**: 新しいバージョンをnpmレジストリに公開
+5. **タグ作成**: `v{version}`形式でGitタグを自動作成
+6. **DXTパッケージビルド**: Desktop Extensions形式のパッケージを生成
+7. **GitHub Release作成**: リリースノートとDXTファイルを含む自動リリース
 
 ## 📝 新バージョンをリリースする手順
 
@@ -30,15 +31,25 @@ mainブランチへプッシュされると、**常に**以下の処理が実行
 - **MINOR（例: 1.0.0 → 1.1.0）**: 新機能追加（破壊的変更なし）
 - **MAJOR（例: 1.0.0 → 2.0.0）**: 破壊的変更あり
 
-### ステップ2: package.jsonを更新
+### ステップ2: バージョンファイルを更新
 
-`package.json`のバージョンを変更する
+以下のファイルのバージョンを**同じ値**に変更する：
 
+#### package.json
 ```json
 {
   "version": "1.0.1"  // 新しいバージョン番号に変更
 }
 ```
+
+#### manifest.json (DXT形式)
+```json
+{
+  "version": "1.0.1"  // package.jsonと同じバージョン番号に変更
+}
+```
+
+**⚠️ 重要**: `package.json`と`manifest.json`のバージョンは必ず一致させてください。CIでバージョン不一致を検知します。
 
 ### ステップ3: mainブランチに反映
 
@@ -48,11 +59,11 @@ mainブランチへプッシュされると、**常に**以下の処理が実行
 # 1. 新しいブランチを作成
 git checkout -b release/v1.0.1
 
-# 2. package.jsonのバージョンを編集
-# エディタで "version": "1.0.1" に変更
+# 2. バージョンファイルを編集
+# package.json と manifest.json の "version": "1.0.1" に変更
 
 # 3. 変更をコミット
-git add package.json
+git add package.json manifest.json
 git commit -m "chore: version bump to 1.0.1"
 git push origin release/v1.0.1
 
