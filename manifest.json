@@ -1,0 +1,95 @@
+{
+    "dxt_version": "0.1",
+    "name": "discord-interface-mcp",
+    "version": "2.0.0",
+    "description": "Model Context Protocol server that provides Discord as an interface for AI assistants",
+    "author": {
+        "name": "RateteDev",
+        "email": "dev@ratete.dev",
+        "url": "https://www.ratete.dev/"
+    },
+    "homepage": "https://github.com/RateteDev/discord-interface-mcp",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/RateteDev/discord-interface-mcp.git"
+    },
+    "server": {
+        "type": "node",
+        "entry_point": "dist/index.js",
+        "mcp_config": {
+            "command": "node",
+            "args": [
+                "${__dirname}/dist/index.js"
+            ],
+            "env": {
+                "DISCORD_BOT_TOKEN": "${user_config.DISCORD_BOT_TOKEN}",
+                "DISCORD_GUILD_ID": "${user_config.DISCORD_GUILD_ID}",
+                "DISCORD_TEXT_CHANNEL_ID": "${user_config.DISCORD_TEXT_CHANNEL_ID}",
+                "DISCORD_LOCALE": "${user_config.DISCORD_LOCALE}",
+                "DISCORD_RESPONSE_TIMEOUT_SECONDS": "${user_config.DISCORD_RESPONSE_TIMEOUT_SECONDS}"
+            }
+        }
+    },
+    "tools": [
+        {
+            "name": "send_textchannel_message",
+            "description": "Send a message to a Discord text channel without waiting for response"
+        },
+        {
+            "name": "create_thread",
+            "description": "Create a new thread with an initial message"
+        },
+        {
+            "name": "send_thread_message",
+            "description": "Send a message to a thread with optional wait for text or button response"
+        }
+    ],
+    "user_config": {
+        "DISCORD_BOT_TOKEN": {
+            "type": "string",
+            "title": "Discord Bot Token",
+            "description": "Discord Bot Token from Discord Developer Portal",
+            "required": true,
+            "sensitive": true
+        },
+        "DISCORD_GUILD_ID": {
+            "type": "string",
+            "title": "Discord Guild ID",
+            "description": "Discord Server (Guild) ID where the bot will operate",
+            "required": true,
+            "sensitive": false
+        },
+        "DISCORD_TEXT_CHANNEL_ID": {
+            "type": "string",
+            "title": "Discord Text Channel ID",
+            "description": "Discord Text Channel ID for sending messages",
+            "required": true,
+            "sensitive": false
+        },
+        "DISCORD_LOCALE": {
+            "type": "string",
+            "title": "Message Language",
+            "description": "Message language (ja/en)",
+            "required": false,
+            "sensitive": false,
+            "default": "en"
+        },
+        "DISCORD_RESPONSE_TIMEOUT_SECONDS": {
+            "type": "string",
+            "title": "Response Timeout",
+            "description": "Response timeout in seconds (optional)",
+            "required": false,
+            "sensitive": false
+        }
+    },
+    "keywords": [
+        "discord",
+        "mcp", 
+        "model-context-protocol",
+        "ai",
+        "claude",
+        "chat",
+        "interface"
+    ],
+    "license": "GPL-3.0"
+}
