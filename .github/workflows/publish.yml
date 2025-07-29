@@ -26,6 +26,15 @@ jobs:
             - name: Build
               run: bun run build
 
+            - name: Type check
+              run: bun run typecheck
+
+            - name: Lint check
+              run: bun run lint
+
+            - name: Format check
+              run: bun run format:check
+
             - name: Check version consistency
               run: |
                   PACKAGE_VERSION=$(node -p "require('./package.json').version")

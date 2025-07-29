@@ -14,7 +14,13 @@
         "build": "bun build src/index.ts --outfile=dist/index.js --target=node && bun build src/cli.js --outfile=dist/cli.js --target=node && node scripts/add-shebang.cjs",
         "start": "bun run dist/index.js",
         "test": "bun test",
-        "test:watch": "bun test --watch"
+        "test:watch": "bun test --watch",
+        "lint": "eslint src/**/*.{ts,js}",
+        "lint:fix": "eslint src/**/*.{ts,js} --fix",
+        "format": "prettier --write src/**/*.{ts,js}",
+        "format:check": "prettier --check src/**/*.{ts,js}",
+        "typecheck": "tsc --noEmit",
+        "prepare": "husky"
     },
     "description": "Model Context Protocol server that provides Discord as an interface for AI assistants",
     "version": "2.1.0",
@@ -32,7 +38,14 @@
         "claude"
     ],
     "devDependencies": {
-        "@types/bun": "^1.2.11"
+        "@eslint/js": "^9.32.0",
+        "@types/bun": "^1.2.11",
+        "@typescript-eslint/eslint-plugin": "^8.38.0",
+        "@typescript-eslint/parser": "^8.38.0",
+        "eslint": "^9.32.0",
+        "husky": "^9.1.7",
+        "lint-staged": "^16.1.2",
+        "prettier": "^3.6.2"
     },
     "peerDependencies": {
         "typescript": "^5.8.3"
@@ -42,5 +55,19 @@
         "discord.js": "^14.21.0",
         "znv": "^0.5.0",
         "zod": "^3.24.3"
+    },
+    "prettier": {
+        "semi": true,
+        "singleQuote": true,
+        "tabWidth": 2,
+        "useTabs": false,
+        "printWidth": 80,
+        "trailingComma": "es5"
+    },
+    "lint-staged": {
+        "*.{ts,js}": [
+            "eslint --fix",
+            "prettier --write"
+        ]
     }
 }
