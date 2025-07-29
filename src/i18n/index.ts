@@ -1,19 +1,19 @@
-import type { Locale, MessageKey, LocaleMessages } from "../types/i18n";
-import { en } from "./locales/en";
-import { ja } from "./locales/ja";
+import type { Locale, MessageKey, LocaleMessages } from '../types/i18n';
+import { en } from './locales/en';
+import { ja } from './locales/ja';
 
 /**
  * ロケールメッセージの定義
  */
 const messages: LocaleMessages = {
   en,
-  ja
+  ja,
 };
 
 /**
  * 現在のロケール
  */
-let currentLocale: Locale = "en";
+let currentLocale: Locale = 'en';
 
 /**
  * 現在のロケールを取得
@@ -46,7 +46,7 @@ export function t(key: MessageKey): string {
  */
 export function initializeI18n(): void {
   const envLocale = process.env.DISCORD_LOCALE;
-  if (envLocale === "ja" || envLocale === "en") {
+  if (envLocale === 'ja' || envLocale === 'en') {
     currentLocale = envLocale;
   }
 }
@@ -58,5 +58,5 @@ export const i18n = {
   getLocale,
   setLocale,
   t,
-  initializeI18n
+  initializeI18n,
 };
