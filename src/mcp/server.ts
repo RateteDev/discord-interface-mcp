@@ -12,6 +12,7 @@ import {
   SendTextChannelMessageArgsSchema,
   CreateThreadArgsSchema,
   SendThreadMessageArgsSchema,
+  GetThreadsArgsSchema,
 } from '../validation/schemas';
 import type {
   TextChannelMessageResponse,
@@ -19,6 +20,7 @@ import type {
   SendThreadMessageResponse,
   ThreadMessageTextResponse,
   ThreadMessageButtonResponse,
+  GetThreadsResponse,
 } from '../types/mcp';
 import { getStatusColor } from '../utils/color';
 // import { t } from '../i18n';
@@ -226,6 +228,21 @@ export class MCPServer {
             required: ['threadId'],
           },
         },
+        {
+          name: 'get_threads',
+          description: 'Get a list of threads from the text channel',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              filter: {
+                type: 'string',
+                enum: ['all', 'active', 'archived'],
+                description: 'Filter threads by status (default: active)',
+              },
+            },
+            required: [],
+          },
+        },
       ],
     };
   }
@@ -251,6 +268,9 @@ export class MCPServer {
 
       case 'send_thread_message':
         return this.sendThreadMessage(args);
+
+      case 'get_threads':
+        return this.getThreads(args);
 
       default:
         throw new Error(`Unknown tool: ${name}`);
@@ -483,6 +503,49 @@ export class MCPServer {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       throw new Error(`Failed to send message to thread: ${errorMessage}`);
+    }
+  }
+
+  /**
+   * スレッド一覧を取得
+   * @private
+   * @param args スレッド一覧取得引数
+   * @returns スレッド一覧
+   */
+  private async getThreads(args: unknown): Promise<CallToolResult> {
+    try {
+      // Zodバリデーション
+      const validatedArgs = GetThreadsArgsSchema.parse(args);
+
+      // デフォルトは'active'
+      const filter = validatedArgs.filter || 'active';
+
+      const threads = await this.discordBot.getThreads(filter);
+      const fetchedAt = new Date().toISOString();
+
+      console.error(
+        `[INFO] Fetched ${threads.length} threads with filter: ${filter}`
+      );
+
+      const response: GetThreadsResponse = {
+        threads,
+        fetchedAt,
+        totalCount: threads.length,
+        status: 'success',
+      };
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(response, null, 2),
+          },
+        ],
+      };
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to get threads: ${errorMessage}`);
     }
   }
 

@@ -116,3 +116,30 @@ export type SendThreadMessageResponse =
   | ThreadMessageResponse
   | ThreadMessageTextResponse
   | ThreadMessageButtonResponse;
+
+/**
+ * get_threads の引数
+ */
+export interface GetThreadsArgs {
+  filter?: 'all' | 'active' | 'archived';
+}
+
+/**
+ * スレッド情報
+ */
+export interface ThreadInfo {
+  threadId: string;
+  threadName: string;
+  createdAt: string;
+  archived: boolean;
+}
+
+/**
+ * get_threads のレスポンス
+ */
+export interface GetThreadsResponse {
+  threads: ThreadInfo[];
+  fetchedAt: string;
+  totalCount: number;
+  status: 'success';
+}

@@ -81,6 +81,29 @@ describe('MCPServer', () => {
           }
         }
       ),
+      getThreads: mock((filter: string = 'active') => {
+        const mockThreads = [
+          {
+            threadId: 'thread-1',
+            threadName: 'Test Thread 1',
+            createdAt: '2023-01-01T00:00:00.000Z',
+            archived: filter === 'archived' || filter === 'all',
+          },
+          {
+            threadId: 'thread-2',
+            threadName: 'Test Thread 2',
+            createdAt: '2023-01-02T00:00:00.000Z',
+            archived: false,
+          },
+        ];
+
+        if (filter === 'active') {
+          return Promise.resolve(mockThreads.filter((t) => !t.archived));
+        } else if (filter === 'archived') {
+          return Promise.resolve(mockThreads.filter((t) => t.archived));
+        }
+        return Promise.resolve(mockThreads);
+      }),
       getIsReady: mock(() => true),
       start: mock(() => Promise.resolve()),
       stop: mock(() => Promise.resolve()),
@@ -127,7 +150,7 @@ describe('MCPServer', () => {
     it('利用可能なツールのリストを返す', async () => {
       const tools = await (mcpServer as any).listTools();
 
-      expect(tools.tools).toHaveLength(3);
+      expect(tools.tools).toHaveLength(4);
       expect(
         tools.tools.find((t: any) => t.name === 'send_textchannel_message')
       ).toBeDefined();
@@ -136,6 +159,9 @@ describe('MCPServer', () => {
       ).toBeDefined();
       expect(
         tools.tools.find((t: any) => t.name === 'send_thread_message')
+      ).toBeDefined();
+      expect(
+        tools.tools.find((t: any) => t.name === 'get_threads')
       ).toBeDefined();
     });
   });

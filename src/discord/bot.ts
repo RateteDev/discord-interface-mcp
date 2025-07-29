@@ -10,7 +10,7 @@ import {
   type ButtonInteraction,
   type Message,
 } from 'discord.js';
-import type { Button as FeedbackButton } from '../types/mcp';
+import type { Button as FeedbackButton, ThreadInfo } from '../types/mcp';
 import { t } from '../i18n';
 /**
  * Discord Bot の設定インターフェース
@@ -524,5 +524,63 @@ export class DiscordBot {
       });
     }
     throw new Error('Invalid waitForResponse configuration');
+  }
+
+  /**
+   * スレッド一覧を取得
+   * @param filter フィルター（'all' | 'active' | 'archived'）
+   * @returns スレッド情報の配列
+   */
+  async getThreads(
+    filter: 'all' | 'active' | 'archived' = 'active'
+  ): Promise<ThreadInfo[]> {
+    if (!this.isReady) {
+      throw new Error('Bot is not ready');
+    }
+
+    const channel = this.client.channels.cache.get(this.config.textChannelId);
+    if (!channel || !channel.isTextBased()) {
+      throw new Error('Channel not found or not a text channel');
+    }
+
+    // スレッドをサポートするチャンネルタイプかチェック
+    if (!('threads' in channel)) {
+      throw new Error('Channel does not support threads');
+    }
+
+    const threads: ThreadInfo[] = [];
+
+    try {
+      // アクティブなスレッドを取得
+      if (filter === 'active' || filter === 'all') {
+        const activeThreads = await channel.threads.fetchActive();
+        for (const thread of activeThreads.threads.values()) {
+          threads.push({
+            threadId: thread.id,
+            threadName: thread.name,
+            createdAt: thread.createdAt?.toISOString() || '',
+            archived: false,
+          });
+        }
+      }
+
+      // アーカイブされたスレッドを取得
+      if (filter === 'archived' || filter === 'all') {
+        const archivedThreads = await channel.threads.fetchArchived();
+        for (const thread of archivedThreads.threads.values()) {
+          threads.push({
+            threadId: thread.id,
+            threadName: thread.name,
+            createdAt: thread.createdAt?.toISOString() || '',
+            archived: true,
+          });
+        }
+      }
+
+      return threads;
+    } catch (error) {
+      console.error('[ERROR] Failed to fetch threads:', error);
+      throw error;
+    }
   }
 }
