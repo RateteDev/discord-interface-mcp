@@ -51,6 +51,7 @@
 | `send_textchannel_message` | テキストチャンネルへ通知を送信                          |
 | `create_thread`            | スレッドを作成                                         |
 | `send_thread_message`      | スレッドへメッセージ送信（テキスト/ボタン応答待機対応） |
+| `get_threads`              | テキストチャンネル内のスレッド一覧を取得               |
 
 詳細は [docs/mcp-server-reference.md](./docs/mcp-server-reference.md) を参照。
 
