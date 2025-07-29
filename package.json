@@ -23,7 +23,7 @@
         "prepare": "husky"
     },
     "description": "Model Context Protocol server that provides Discord as an interface for AI assistants",
-    "version": "2.1.0",
+    "version": "2.2.0",
     "author": "Your Name",
     "license": "GPL-3.0",
     "repository": {
