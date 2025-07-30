@@ -104,6 +104,59 @@ describe('MCPServer', () => {
         }
         return Promise.resolve(mockThreads);
       }),
+      getThreadMessages: mock((threadId: string, options: any = {}) => {
+        const mockMessages = [
+          {
+            messageId: 'message-1',
+            content: 'こんにちは！',
+            author: {
+              id: 'user-1',
+              username: 'testuser',
+              displayName: 'テストユーザー',
+              bot: false,
+            },
+            createdAt: '2023-01-01T12:00:00.000Z',
+            editedAt: null,
+            embeds:
+              options.includeEmbeds !== false
+                ? [
+                    {
+                      title: 'テスト埋め込み',
+                      description: 'これは埋め込みメッセージです',
+                      color: 0x0099ff,
+                    },
+                  ]
+                : undefined,
+            attachments:
+              options.includeAttachments !== false
+                ? [
+                    {
+                      id: 'attachment-1',
+                      filename: 'test.png',
+                      size: 1024,
+                      contentType: 'image/png',
+                      url: 'https://cdn.discord.com/test.png',
+                    },
+                  ]
+                : undefined,
+          },
+          {
+            messageId: 'message-2',
+            content: 'いいアイデアですね！',
+            author: {
+              id: 'user-2',
+              username: 'reviewer',
+              displayName: null,
+              bot: false,
+            },
+            createdAt: '2023-01-01T11:30:00.000Z',
+            editedAt: '2023-01-01T11:31:00.000Z',
+          },
+        ];
+
+        const limit = options.limit || 50;
+        return Promise.resolve(mockMessages.slice(0, limit));
+      }),
       getIsReady: mock(() => true),
       start: mock(() => Promise.resolve()),
       stop: mock(() => Promise.resolve()),
@@ -150,7 +203,7 @@ describe('MCPServer', () => {
     it('利用可能なツールのリストを返す', async () => {
       const tools = await (mcpServer as any).listTools();
 
-      expect(tools.tools).toHaveLength(4);
+      expect(tools.tools).toHaveLength(5);
       expect(
         tools.tools.find((t: any) => t.name === 'send_textchannel_message')
       ).toBeDefined();
@@ -162,6 +215,9 @@ describe('MCPServer', () => {
       ).toBeDefined();
       expect(
         tools.tools.find((t: any) => t.name === 'get_threads')
+      ).toBeDefined();
+      expect(
+        tools.tools.find((t: any) => t.name === 'get_thread_messages')
       ).toBeDefined();
     });
   });
@@ -445,6 +501,97 @@ describe('MCPServer', () => {
       ) as ThreadMessageButtonResponse;
       expect(response.response.value).toBe('timeout');
       expect(response.response.userId).toBeUndefined();
+    });
+  });
+
+  describe('get_thread_messages', () => {
+    it('スレッドからメッセージを取得できる', async () => {
+      const args = {
+        threadId: 'test-thread-123',
+      };
+
+      const result = await callToolMethod('get_thread_messages', args);
+
+      expect(result).toBeDefined();
+      expect(result.content).toBeDefined();
+      const response = JSON.parse(result.content[0].text);
+      expect(response.status).toBe('success');
+      expect(response.messages).toHaveLength(2);
+      expect(response.threadId).toBe('test-thread-123');
+      expect(response.totalFetched).toBe(2);
+      expect(mockDiscordBot.getThreadMessages).toHaveBeenCalledWith(
+        'test-thread-123',
+        {
+          limit: 50,
+          before: undefined,
+          after: undefined,
+          includeEmbeds: true,
+          includeAttachments: true,
+        }
+      );
+    });
+
+    it('オプション付きでスレッドからメッセージを取得できる', async () => {
+      const args = {
+        threadId: 'test-thread-123',
+        limit: 25,
+        before: 'message-before-123',
+        includeEmbeds: false,
+        includeAttachments: false,
+      };
+
+      const result = await callToolMethod('get_thread_messages', args);
+
+      expect(result).toBeDefined();
+      expect(result.content).toBeDefined();
+      const response = JSON.parse(result.content[0].text);
+      expect(response.status).toBe('success');
+      expect(mockDiscordBot.getThreadMessages).toHaveBeenCalledWith(
+        'test-thread-123',
+        {
+          limit: 25,
+          before: 'message-before-123',
+          after: undefined,
+          includeEmbeds: false,
+          includeAttachments: false,
+        }
+      );
+    });
+
+    it('メッセージの構造が正しい', async () => {
+      const args = {
+        threadId: 'test-thread-123',
+      };
+
+      const result = await callToolMethod('get_thread_messages', args);
+      const response = JSON.parse(result.content[0].text);
+
+      const message = response.messages[0];
+      expect(message.messageId).toBe('message-1');
+      expect(message.content).toBe('こんにちは！');
+      expect(message.author.username).toBe('testuser');
+      expect(message.embeds).toHaveLength(1);
+      expect(message.attachments).toHaveLength(1);
+    });
+
+    it('Discord Bot エラーを適切に処理する', async () => {
+      mockDiscordBot.getThreadMessages = mock(() =>
+        Promise.reject(new Error('Thread not found'))
+      );
+
+      await expect(
+        callToolMethod('get_thread_messages', {
+          threadId: 'invalid-thread',
+        })
+      ).rejects.toThrow('Failed to get thread messages: Thread not found');
+    });
+
+    it('バリデーションエラーを適切に処理する', async () => {
+      await expect(
+        callToolMethod('get_thread_messages', {
+          // threadId が欠如
+        })
+      ).rejects.toThrow();
     });
   });
 });

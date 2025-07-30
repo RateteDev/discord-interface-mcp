@@ -143,3 +143,87 @@ export interface GetThreadsResponse {
   totalCount: number;
   status: 'success';
 }
+
+/**
+ * get_thread_messages の引数
+ */
+export interface GetThreadMessagesArgs {
+  threadId: string;
+  limit?: number;
+  before?: string;
+  after?: string;
+  includeEmbeds?: boolean;
+  includeAttachments?: boolean;
+}
+
+/**
+ * 埋め込み情報
+ */
+export interface EmbedInfo {
+  title?: string;
+  description?: string;
+  color?: number;
+  timestamp?: string;
+  fields?: Array<{
+    name: string;
+    value: string;
+    inline?: boolean;
+  }>;
+}
+
+/**
+ * 添付ファイル情報
+ */
+export interface AttachmentInfo {
+  id: string;
+  filename: string;
+  size: number;
+  contentType?: string;
+  url: string;
+}
+
+/**
+ * リアクション情報
+ */
+export interface ReactionInfo {
+  emoji: string;
+  count: number;
+  me?: boolean;
+}
+
+/**
+ * スレッドメッセージ情報
+ */
+export interface ThreadMessage {
+  messageId: string;
+  content: string;
+  author: {
+    id: string;
+    username: string;
+    displayName?: string;
+    bot: boolean;
+  };
+  createdAt: string;
+  editedAt?: string;
+  embeds?: EmbedInfo[];
+  attachments?: AttachmentInfo[];
+  reactions?: ReactionInfo[];
+  replyTo?: {
+    messageId: string;
+    authorId: string;
+  };
+}
+
+/**
+ * get_thread_messages のレスポンス
+ */
+export interface GetThreadMessagesResponse {
+  messages: ThreadMessage[];
+  threadId: string;
+  fetchedAt: string;
+  totalFetched: number;
+  hasMore: boolean;
+  oldestMessageId?: string;
+  newestMessageId?: string;
+  status: 'success';
+}

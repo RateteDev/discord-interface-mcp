@@ -583,4 +583,121 @@ export class DiscordBot {
       throw error;
     }
   }
+
+  /**
+   * スレッド内のメッセージを取得
+   * @param threadId スレッドID
+   * @param options 取得オプション
+   * @returns メッセージ一覧
+   */
+  async getThreadMessages(
+    threadId: string,
+    options: {
+      limit?: number;
+      before?: string;
+      after?: string;
+      includeEmbeds?: boolean;
+      includeAttachments?: boolean;
+    } = {}
+  ): Promise<import('../types/mcp').ThreadMessage[]> {
+    if (!this.isReady) {
+      throw new Error('Bot is not ready');
+    }
+
+    const thread = this.client.channels.cache.get(threadId);
+    if (!thread || !thread.isThread()) {
+      throw new Error('Thread not found');
+    }
+
+    const {
+      limit = 50,
+      before,
+      after,
+      includeEmbeds = true,
+      includeAttachments = true,
+    } = options;
+
+    try {
+      const fetchOptions: any = { limit };
+      if (before) fetchOptions.before = before;
+      if (after) fetchOptions.after = after;
+
+      const messages = await thread.messages.fetch(fetchOptions);
+
+      const threadMessages: import('../types/mcp').ThreadMessage[] = Array.from(
+        (messages as any).values()
+      ).map((message: any) => {
+        const threadMessage: import('../types/mcp').ThreadMessage = {
+          messageId: message.id,
+          content: message.content,
+          author: {
+            id: message.author.id,
+            username: message.author.username,
+            displayName: message.author.displayName || undefined,
+            bot: message.author.bot,
+          },
+          createdAt: message.createdAt.toISOString(),
+          editedAt: message.editedAt?.toISOString(),
+        };
+
+        // Embedの情報を含める場合
+        if (includeEmbeds && message.embeds.length > 0) {
+          threadMessage.embeds = message.embeds.map((embed: any) => ({
+            title: embed.title || undefined,
+            description: embed.description || undefined,
+            color: embed.color || undefined,
+            timestamp: embed.timestamp || undefined,
+            fields: embed.fields?.map((field: any) => ({
+              name: field.name,
+              value: field.value,
+              inline: field.inline,
+            })),
+          }));
+        }
+
+        // 添付ファイルの情報を含める場合
+        if (includeAttachments && message.attachments.size > 0) {
+          threadMessage.attachments = Array.from(
+            message.attachments.values()
+          ).map((attachment: any) => ({
+            id: attachment.id,
+            filename: attachment.name,
+            size: attachment.size,
+            contentType: attachment.contentType || undefined,
+            url: attachment.url,
+          }));
+        }
+
+        // リアクションの情報を含める
+        if (message.reactions.cache.size > 0) {
+          threadMessage.reactions = Array.from(
+            message.reactions.cache.values()
+          ).map((reaction: any) => ({
+            emoji: reaction.emoji.toString(),
+            count: reaction.count,
+            me: reaction.me,
+          }));
+        }
+
+        // 返信の情報を含める
+        if (message.reference?.messageId) {
+          threadMessage.replyTo = {
+            messageId: message.reference.messageId,
+            authorId: message.author.id,
+          };
+        }
+
+        return threadMessage;
+      });
+
+      // メッセージを新しい順（最新が先頭）にソート
+      return threadMessages.sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+    } catch (error) {
+      console.error('[ERROR] Failed to fetch thread messages:', error);
+      throw error;
+    }
+  }
 }

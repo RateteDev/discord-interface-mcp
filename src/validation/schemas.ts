@@ -89,3 +89,15 @@ export const SendThreadMessageArgsSchema = z
 export const GetThreadsArgsSchema = z.object({
   filter: z.enum(['all', 'active', 'archived']).optional(),
 });
+
+/**
+ * get_thread_messages引数のスキーマ
+ */
+export const GetThreadMessagesArgsSchema = z.object({
+  threadId: z.string().min(1, 'スレッドIDは必須です'),
+  limit: z.number().min(1).max(100).optional().default(50),
+  before: z.string().optional(),
+  after: z.string().optional(),
+  includeEmbeds: z.boolean().optional().default(true),
+  includeAttachments: z.boolean().optional().default(true),
+});

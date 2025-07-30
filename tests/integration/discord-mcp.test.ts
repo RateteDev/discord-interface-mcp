@@ -138,12 +138,13 @@ describe('Discord と MCP の統合テスト', () => {
       const tools = await (mcpServer as any).listTools();
 
       // 期待されるツールが含まれていることを確認
-      expect(tools.tools).toHaveLength(4);
+      expect(tools.tools).toHaveLength(5);
       expect(tools.tools.map((t: any) => t.name)).toEqual([
         'send_textchannel_message',
         'create_thread',
         'send_thread_message',
         'get_threads',
+        'get_thread_messages',
       ]);
     });
   });
