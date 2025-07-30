@@ -10,21 +10,20 @@
     ],
     "scripts": {
         "dev": "bun run --watch src/index.ts",
-        "deploy": "echo '(｀・ω・´) < Replace with your deploy script!'",
         "build": "bun build src/index.ts --outfile=dist/index.js --target=node && bun build src/cli.js --outfile=dist/cli.js --target=node && node scripts/add-shebang.cjs",
         "start": "bun run dist/index.js",
         "test": "bun test",
         "test:watch": "bun test --watch",
-        "lint": "eslint src/**/*.{ts,js}",
-        "lint:fix": "eslint src/**/*.{ts,js} --fix",
-        "format": "prettier --write src/**/*.{ts,js}",
-        "format:check": "prettier --check src/**/*.{ts,js}",
+        "lint": "eslint src/**/*.{ts,js} tests/**/*.ts",
+        "lint:fix": "eslint src/**/*.{ts,js} tests/**/*.ts --fix",
+        "format": "prettier --write src/**/*.{ts,js} tests/**/*.ts",
+        "format:check": "prettier --check src/**/*.{ts,js} tests/**/*.ts",
         "typecheck": "tsc --noEmit",
         "prepare": "husky"
     },
     "description": "Model Context Protocol server that provides Discord as an interface for AI assistants",
     "version": "2.2.1",
-    "author": "Your Name",
+    "author": "RateteDev (https://github.com/RateteDev)",
     "license": "GPL-3.0",
     "repository": {
         "type": "git",
@@ -59,7 +58,7 @@
     "prettier": {
         "semi": true,
         "singleQuote": true,
-        "tabWidth": 2,
+        "tabWidth": 4,
         "useTabs": false,
         "printWidth": 80,
         "trailingComma": "es5"

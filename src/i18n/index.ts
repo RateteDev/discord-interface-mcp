@@ -6,8 +6,8 @@ import { ja } from './locales/ja';
  * ロケールメッセージの定義
  */
 const messages: LocaleMessages = {
-  en,
-  ja,
+    en,
+    ja,
 };
 
 /**
@@ -20,7 +20,7 @@ let currentLocale: Locale = 'en';
  * @returns 現在のロケール
  */
 export function getLocale(): Locale {
-  return currentLocale;
+    return currentLocale;
 }
 
 /**
@@ -28,7 +28,7 @@ export function getLocale(): Locale {
  * @param locale 設定するロケール
  */
 export function setLocale(locale: Locale): void {
-  currentLocale = locale;
+    currentLocale = locale;
 }
 
 /**
@@ -37,7 +37,7 @@ export function setLocale(locale: Locale): void {
  * @returns 翻訳されたメッセージ
  */
 export function t(key: MessageKey): string {
-  return messages[currentLocale][key];
+    return messages[currentLocale][key];
 }
 
 /**
@@ -45,18 +45,18 @@ export function t(key: MessageKey): string {
  * 環境変数からロケールを読み込む
  */
 export function initializeI18n(): void {
-  const envLocale = process.env.DISCORD_LOCALE;
-  if (envLocale === 'ja' || envLocale === 'en') {
-    currentLocale = envLocale;
-  }
+    const envLocale = process.env.DISCORD_LOCALE;
+    if (envLocale === 'ja' || envLocale === 'en') {
+        currentLocale = envLocale;
+    }
 }
 
 /**
  * デフォルトエクスポート
  */
 export const i18n = {
-  getLocale,
-  setLocale,
-  t,
-  initializeI18n,
+    getLocale,
+    setLocale,
+    t,
+    initializeI18n,
 };
