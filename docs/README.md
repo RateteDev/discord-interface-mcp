@@ -10,8 +10,8 @@ Discord Interface MCPの技術ドキュメントです。このプロジェク�
 
 ### 開発者向け
 - [MCPサーバーリファレンス](mcp-server-reference.md) - ツールとインターフェースの詳細
-- [実装ガイド](implementation-guide.md) - 拡張開発のための実装詳細
-
+- [MCP Inspector ガイド](mcp-inspector-guide.md) - MCP Inspectorの使い方とテスト方法
+- [バージョン管理方法](version-management.md) - バージョンアップにおける仕組みとCDプロセス
 
 ## 🚀 クイックスタート
 
@@ -22,9 +22,3 @@ Discord Interface MCPの技術ドキュメントです。このプロジェク�
 5. MCPクライアントに設定を追加
 
 詳細は[インストールガイド](install-guide.md)を参照してください。
-
-## 📝 バージョン情報
-
-- **現在のバージョン**: 0.1.0
-- **Phase**: 1（一方向通信実装済み）
-- **更新日**: 2025-07-25
