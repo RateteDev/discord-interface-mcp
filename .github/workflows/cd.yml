@@ -107,7 +107,7 @@ jobs:
 
                       #### One-click インストール (DXT)
                       1. [discord-interface-mcp-${{ steps.version-check.outputs.version }}.dxt](https://github.com/${{ github.repository }}/releases/download/v${{ steps.version-check.outputs.version }}/discord-interface-mcp-${{ steps.version-check.outputs.version }}.dxt) をダウンロード
-                      2. Claude Desktop > Settings > MCP Servers > Add Extension (.dxt)
+                      2. Claude Desktop > File > Settings > Add Extension > Select DXT file
                       3. ダウンロードしたファイルを選択
                       4. 必要な設定を入力
 
