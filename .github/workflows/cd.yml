@@ -15,26 +15,12 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v4
 
-            # Node.jsの環境セットアップ（npm publish用）
+            # Node.jsの環境セットアップ（npm view用）
             - name: Setup Node.js
               uses: actions/setup-node@v4
               with:
                   node-version: "20"
                   registry-url: "https://registry.npmjs.org"
-
-            # Bunの環境セットアップ
-            - name: Setup Bun
-              uses: oven-sh/setup-bun@v2
-              with:
-                  bun-version: latest
-
-            # 依存関係のインストール
-            - name: Install dependencies
-              run: bun install
-
-            # プロジェクトのビルド実行
-            - name: Build
-              run: bun run build
 
             # バージョン変更チェック（npmに公開済みのバージョンと比較）
             - name: Check if version changed
@@ -53,6 +39,23 @@ jobs:
                     echo "should_publish=false" >> $GITHUB_OUTPUT
                     echo "Version unchanged, skipping publish"
                   fi
+
+            # Bunの環境セットアップ
+            - name: Setup Bun
+              if: steps.version-check.outputs.should_publish == 'true'
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: latest
+
+            # 依存関係のインストール
+            - name: Install dependencies
+              if: steps.version-check.outputs.should_publish == 'true'
+              run: bun install
+
+            # プロジェクトのビルド実行
+            - name: Build
+              if: steps.version-check.outputs.should_publish == 'true'
+              run: bun run build
 
             # npmへのパッケージ公開
             - name: Publish to npm
@@ -104,7 +107,7 @@ jobs:
 
                       #### One-click インストール (DXT)
                       1. [discord-interface-mcp-${{ steps.version-check.outputs.version }}.dxt](https://github.com/${{ github.repository }}/releases/download/v${{ steps.version-check.outputs.version }}/discord-interface-mcp-${{ steps.version-check.outputs.version }}.dxt) をダウンロード
-                      2. Claude Desktop > Settings > MCP Servers > Add Extension (.dxt)
+                      2. Claude Desktop > File > Settings > Add Extension > Select DXT file
                       3. ダウンロードしたファイルを選択
                       4. 必要な設定を入力
 

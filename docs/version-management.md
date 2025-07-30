@@ -10,16 +10,17 @@
 
 mainブランチへプッシュされると、**常に**以下の処理が実行されます：
 
-1. **ビルド&テスト**: コードの品質確認
-2. **バージョン一致チェック**: `package.json`と`manifest.json`のバージョンが一致することを確認
-3. **バージョンチェック**: `package.json`のバージョンと既公開版を比較
+1. **バージョンチェック**: `package.json`のバージョンと既公開版を比較
 
 **バージョンが変更されている場合のみ**、以下が追加実行されます：
 
-4. **npm公開**: 新しいバージョンをnpmレジストリに公開
-5. **タグ作成**: `v{version}`形式でGitタグを自動作成
-6. **DXTパッケージビルド**: Desktop Extensions形式のパッケージを生成
-7. **GitHub Release作成**: リリースノートとDXTファイルを含む自動リリース
+2. **ビルド処理**: 依存関係インストール・プロジェクトビルド
+3. **npm公開**: 新しいバージョンをnpmレジストリに公開
+4. **タグ作成**: `v{version}`形式でGitタグを自動作成
+5. **DXTパッケージビルド**: Desktop Extensions形式のパッケージを生成
+6. **GitHub Release作成**: リリースノートとDXTファイルを含む自動リリース
+
+**注意**: コード品質確認（テスト・lint・typecheck）や`package.json`と`manifest.json`のバージョン一致チェックは、PRマージ前のCIプロセスで実行されます。
 
 ## 📝 新バージョンをリリースする手順
 
@@ -96,7 +97,7 @@ npm公開成功時に以下が自動実行されます：
 
 #### One-click インストール (DXT)
 1. discord-interface-mcp-{version}.dxt をダウンロード
-2. Claude Desktop > File> Settings > Add Extension > Select DXT file
+2. Claude Desktop > File > Settings > Add Extension > Select DXT file
 3. ダウンロードしたファイルを選択
 4. 必要な設定を入力
 
