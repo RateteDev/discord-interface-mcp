@@ -13,6 +13,7 @@ import {
   CreateThreadArgsSchema,
   SendThreadMessageArgsSchema,
   GetThreadsArgsSchema,
+  GetThreadMessagesArgsSchema,
 } from '../validation/schemas';
 import type {
   TextChannelMessageResponse,
@@ -21,6 +22,7 @@ import type {
   ThreadMessageTextResponse,
   ThreadMessageButtonResponse,
   GetThreadsResponse,
+  GetThreadMessagesResponse,
 } from '../types/mcp';
 import { getStatusColor } from '../utils/color';
 // import { t } from '../i18n';
@@ -243,6 +245,48 @@ export class MCPServer {
             required: [],
           },
         },
+        {
+          name: 'get_thread_messages',
+          description:
+            'Get messages from a specific thread with pagination support',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              threadId: {
+                type: 'string',
+                description: 'The ID of the thread to fetch messages from',
+              },
+              limit: {
+                type: 'number',
+                minimum: 1,
+                maximum: 100,
+                description:
+                  'Maximum number of messages to fetch (1-100, default: 50)',
+              },
+              before: {
+                type: 'string',
+                description:
+                  'Message ID to get messages before (for pagination)',
+              },
+              after: {
+                type: 'string',
+                description:
+                  'Message ID to get messages after (for pagination)',
+              },
+              includeEmbeds: {
+                type: 'boolean',
+                description:
+                  'Whether to include embed content in the response (default: true)',
+              },
+              includeAttachments: {
+                type: 'boolean',
+                description:
+                  'Whether to include attachment information (default: true)',
+              },
+            },
+            required: ['threadId'],
+          },
+        },
       ],
     };
   }
@@ -271,6 +315,9 @@ export class MCPServer {
 
       case 'get_threads':
         return this.getThreads(args);
+
+      case 'get_thread_messages':
+        return this.getThreadMessages(args);
 
       default:
         throw new Error(`Unknown tool: ${name}`);
@@ -546,6 +593,67 @@ export class MCPServer {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       throw new Error(`Failed to get threads: ${errorMessage}`);
+    }
+  }
+
+  /**
+   * スレッド内のメッセージを取得
+   * @private
+   * @param args メッセージ取得引数
+   * @returns メッセージ一覧
+   */
+  private async getThreadMessages(args: unknown): Promise<CallToolResult> {
+    try {
+      // Zodバリデーション
+      const validatedArgs = GetThreadMessagesArgsSchema.parse(args);
+
+      const messages = await this.discordBot.getThreadMessages(
+        validatedArgs.threadId,
+        {
+          limit: validatedArgs.limit,
+          before: validatedArgs.before,
+          after: validatedArgs.after,
+          includeEmbeds: validatedArgs.includeEmbeds,
+          includeAttachments: validatedArgs.includeAttachments,
+        }
+      );
+
+      const fetchedAt = new Date().toISOString();
+      const hasMore = messages.length === validatedArgs.limit;
+      const oldestMessageId =
+        messages.length > 0
+          ? messages[messages.length - 1]?.messageId
+          : undefined;
+      const newestMessageId =
+        messages.length > 0 ? messages[0]?.messageId : undefined;
+
+      console.error(
+        `[INFO] Fetched ${messages.length} messages from thread ${validatedArgs.threadId}`
+      );
+
+      const response: GetThreadMessagesResponse = {
+        messages,
+        threadId: validatedArgs.threadId,
+        fetchedAt,
+        totalFetched: messages.length,
+        hasMore,
+        oldestMessageId,
+        newestMessageId,
+        status: 'success',
+      };
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(response, null, 2),
+          },
+        ],
+      };
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to get thread messages: ${errorMessage}`);
     }
   }
 
