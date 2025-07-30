@@ -44,9 +44,10 @@ Thumbs.db
 logs/
 *.log
 
-# Claude workspace
+# Claude Code
 .claude-workspace/
 .claude/
+claude.md
 
 # Temporary files
 *.tmp
